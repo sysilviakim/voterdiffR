@@ -5,7 +5,7 @@
 \title{List the Available Snapshots}
 \usage{
 snapshot_list(start = "2018-04-26", end = "2021-01-01", path = "7z",
-  pattern = "^(?=.*Cntywd_)(?!.*Hist)", enc = ".txt",
+  pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type = ".txt",
   id = "\%m\%d\%y", rec = FALSE, per = 1, prefix = "Cntywd_")
 }
 \arguments{
@@ -21,7 +21,7 @@ Defaults to subfolder 7z.}
 \item{pattern}{Regular expression of the file pattern to find.
 Defaults to a particular pattern of OCROV files.}
 
-\item{enc}{File encoding.
+\item{file_type}{File type.
 Defaults to .txt.}
 
 \item{id}{How the snapshot files are formatted/labelled for their IDs.

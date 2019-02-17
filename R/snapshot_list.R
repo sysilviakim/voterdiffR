@@ -15,7 +15,7 @@
 #' Defaults to subfolder 7z.
 #' @param pattern Regular expression of the file pattern to find.
 #' Defaults to a particular pattern of OCROV files.
-#' @param enc File encoding.
+#' @param file_type File type.
 #' Defaults to .txt.
 #' @param id How the snapshot files are formatted/labelled for their IDs.
 #' Defaults to mdy.
@@ -35,7 +35,7 @@ snapshot_list <- function(start = "2018-04-26",
                           end = "2021-01-01",
                           path = "7z",
                           pattern = "^(?=.*Cntywd_)(?!.*Hist)",
-                          enc = ".txt",
+                          file_type = ".txt",
                           id = "%m%d%y",
                           rec = FALSE,
                           per = 1,
@@ -51,9 +51,9 @@ snapshot_list <- function(start = "2018-04-26",
     ) %>%
     dplyr::filter(
       date_label %in% substr(
-        list.files(file.path(path), pattern = enc, recursive = rec)[
+        list.files(file.path(path), pattern = file_type, recursive = rec)[
           grepl(
-            list.files(file.path(path), pattern = enc, recursive = rec),
+            list.files(file.path(path), pattern = file_type, recursive = rec),
             pattern = pattern,
             perl = TRUE
           )
