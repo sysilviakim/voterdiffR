@@ -4,18 +4,22 @@
 \alias{snapshot_import}
 \title{Importing Snapshots into List/Dataframe}
 \usage{
-snapshot_import(path, prefix, units, suffix, file_type = ".txt",
-  col_classes = NULL, n_max = Inf, enc = "ISO-8859-1", del = "\\t",
-  quote = "", col_names = TRUE, na = "", ref = NULL, ...)
+snapshot_import(path = ".", prefix = "", units, suffix = "",
+  file_type = ".txt", col_classes = NULL, n_max = Inf,
+  enc = "ISO-8859-1", del = "\\t", quote = "", col_names = TRUE,
+  na = "", ref = NULL, ...)
 }
 \arguments{
-\item{path}{File path to target.}
+\item{path}{File path to target.
+Defaults to current directory.}
 
 \item{prefix}{File name prefix.}
 
-\item{units}{Snapshot ID e.g. 20180426.}
+\item{units}{Snapshot ID e.g. 20180426.
+Defaults to empty string.}
 
-\item{suffix}{File name suffix.}
+\item{suffix}{File name suffix.
+Defaults to empty string.}
 
 \item{file_type}{Input file type. Currently takes in .txt and .csv.
 Defaults to .txt.}
