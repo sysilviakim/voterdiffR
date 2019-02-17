@@ -16,7 +16,8 @@ Defaults to current directory.}
 \item{prefix}{File name prefix.
 Defaults to empty string.}
 
-\item{units}{Snapshot ID e.g. 20180426.}
+\item{units}{Snapshot ID e.g. 20180426.
+Defaults to empty string.}
 
 \item{suffix}{File name suffix.
 Defaults to empty string.}

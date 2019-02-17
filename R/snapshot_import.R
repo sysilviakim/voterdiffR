@@ -17,6 +17,7 @@
 #' @param prefix File name prefix.
 #' Defaults to empty string.
 #' @param units Snapshot ID e.g. 20180426.
+#' Defaults to empty string.
 #' @param suffix File name suffix.
 #' Defaults to empty string.
 #' @param file_type Input file type. Currently takes in .txt and .csv.
