@@ -57,7 +57,7 @@ snapshot_import <- function(path = ".",
                             ref = NULL,
                             ...) {
   out <- list()
-  if (!(file_type %in% c("csv", "txt"))) {
+  if (!(file_type %in% c(".csv", ".txt"))) {
     stop("The input must be either .txt or .csv.")
   }
   if (length(units) == 0) {
