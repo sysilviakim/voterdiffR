@@ -13,9 +13,12 @@
 #' @importFrom readr cols
 #'
 #' @param path File path to target.
+#' Defaults to current directory.
 #' @param prefix File name prefix.
+#' Defaults to empty string.
 #' @param units Snapshot ID e.g. 20180426.
 #' @param suffix File name suffix.
+#' Defaults to empty string.
 #' @param file_type Input file type. Currently takes in .txt and .csv.
 #' Defaults to .txt.
 #' @param col_classes A list of column classes for faster import, if available.
@@ -39,10 +42,10 @@
 #'
 #' @export
 
-snapshot_import <- function(path,
-                            prefix,
+snapshot_import <- function(path = ".",
+                            prefix = "",
                             units,
-                            suffix,
+                            suffix = "",
                             file_type = ".txt",
                             col_classes = NULL,
                             n_max = Inf,
