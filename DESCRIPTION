@@ -1,0 +1,46 @@
+Package: voterdiffR
+Type: Package
+Title: Evaluating the Quality of Changes in Voter Registration Databases
+Version: 0.1.0
+Authors@R: as.person(c(
+    "Seo-young Silvia Kim <sskim@caltech.edu> [aut, cre]"
+  ))
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: This package contains replication functions and materials 
+  for Kim, Schneider, and Alvarez (2018) 
+  Evaluating the Quality of Changes in Voter Registration Databases.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat,
+    knitr,
+    rmarkdown
+RoxygenNote: 6.1.1
+Depends: R (>= 3.5.0)
+Imports: 
+    stats, 
+    rlang, 
+    dplyr, 
+    readr, 
+    purrr, 
+    tibble, 
+    stringr,
+    magrittr, 
+    lubridate, 
+    DMwR, 
+    fontcm, 
+    extrafont,
+    ggplot2, 
+    ggthemes,
+    RecordLinkage,
+    fastLink (>= 0.4.0), 
+    futile.matrix, 
+    assertthat, 
+    xtable, 
+    parallel, 
+    foreach, 
+    doParallel,
+    anomalize
+Remotes: sysilviakim/Kmisc
+VignetteBuilder: knitr
