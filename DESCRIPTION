@@ -28,6 +28,7 @@ Imports:
     stringr,
     magrittr, 
     lubridate, 
+    fst,
     DMwR, 
     fontcm, 
     extrafont,
@@ -41,6 +42,7 @@ Imports:
     parallel, 
     foreach, 
     doParallel,
-    anomalize
+    anomalize,
+    Kmisc
 Remotes: sysilviakim/Kmisc
 VignetteBuilder: knitr
