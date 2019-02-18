@@ -106,6 +106,11 @@ vrmatch <- function(date_df,
       n.cores <- 2
     }
   }
+  for (p in c(path_changes, path_reports, path_matches)) {
+    if (!dir.exists(file.path(p))) {
+      dir.create(p)
+    }
+  }
   final_report <- tibble()
   for (i in 1:(nrow(date_df) - 1)) {
     day1 <- date_df[[date_label]][i]

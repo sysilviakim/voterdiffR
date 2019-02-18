@@ -51,7 +51,8 @@ vars_all <- c(non_addr, addr)
 
 output <- vrmatch(
   date_df, varnames = vars_all, varnames_str = setdiff(vars_all, vars_num),
-  varnames_date = intersect(vars_all, vars_date), varnames_num = vars_num
+  varnames_date = intersect(vars_all, vars_date), varnames_num = vars_num,
+  file_type = ".fst"
 )
 
 ## Anomaly Detection
