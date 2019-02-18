@@ -262,8 +262,7 @@ match_out <- function(inter, f.out) {
 
 match_none <- function(inter) {
   match <- list(data = inter, f.out = NULL)
-  match$data$changed_A <-
-    match$data$changed_B <- inter$exact_match[0, ]
+  match$data$changed_A <- match$data$changed_B <- inter$exact_match[0, ]
   match$data$only_A <- match$data$mismatch_A
   match$data$only_B <- match$data$mismatch_B
   return(match)

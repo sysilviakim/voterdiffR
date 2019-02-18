@@ -29,9 +29,12 @@ exact_match <- function(df_list,
   df_list[[dfA]] <- df_list[[dfA]] %>% dplyr::mutate_if(is.factor, as.character)
   df_list[[dfB]] <- df_list[[dfB]] %>% dplyr::mutate_if(is.factor, as.character)
   if (exact_exclude == TRUE) {
-    out[["exact_match"]] <- dplyr::inner_join(df_list[[dfA]], df_list[[dfB]])
-    out[["mismatch_A"]] <- dplyr::anti_join(df_list[[dfA]], out[["full_match"]])
-    out[["mismatch_B"]] <- dplyr::anti_join(df_list[[dfB]], out[["full_match"]])
+    out[["exact_match"]] <-
+      dplyr::inner_join(df_list[[dfA]], df_list[[dfB]])
+    out[["mismatch_A"]] <-
+      dplyr::anti_join(df_list[[dfA]], out[["exact_match"]])
+    out[["mismatch_B"]] <-
+      dplyr::anti_join(df_list[[dfB]], out[["exact_match"]])
   } else {
     out[["exact_match"]] <- df_list[[dfA]][0, ]
     out[["mismatch_A"]] <- df_list[[dfA]]
