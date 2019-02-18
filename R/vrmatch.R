@@ -62,6 +62,8 @@
 #' @param seed Seed to set. Defaults to 123.
 #' @param ... Other parameters for fastLink.
 #'
+#' @return A nested list of matched dataframes, fastLink output, and arguments.
+#'
 #' @export
 
 vrmatch <- function(date_df,
@@ -159,6 +161,7 @@ vrmatch <- function(date_df,
             stringdist.match = varnames_str,
             numeric.match = varnames_num,
             partial.match = partial.match,
+            n.cores = n.cores,
             ...
           )
         print("fastLink running is complete.")
@@ -169,6 +172,13 @@ vrmatch <- function(date_df,
       }
       ## Delete mismatches, which are interim objects.
       match$data$mismatch_A <- match$data$mismatch_B <- NULL
+      match$args <- list(
+        vars_all = varnames, vars_str = varnames_str, vars_num = varnames_num,
+        vars_id = varnames_id, vars_partial = partial.match,
+        vars_block = varnames_block, vars_change = vars_change,
+        path_matches = path_matches, path_changes = path_changes,
+        path_reports = path_reports, seed = seed
+      )
       save(
         match,
         file = file.path(

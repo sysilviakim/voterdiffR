@@ -11,7 +11,7 @@ vrmatch(date_df, exact_exclude = TRUE, sample = FALSE, block = FALSE,
   exist_files = FALSE, varnames, varnames_str, varnames_num = NULL,
   varnames_id = NULL, partial.match = NULL, varnames_block = NULL,
   vars_change = NULL, n.cores = NULL, file_type = ".Rda",
-  date_label = "date_label", nrow = "nrow", ...)
+  date_label = "date_label", nrow = "nrow", seed = 123, ...)
 }
 \arguments{
 \item{date_df}{Dataframe of list of snapshots.}
@@ -78,7 +78,12 @@ Defaults to "date_label".}
 \item{nrow}{Name of list element which will contain the number of rows
 of the input list dataframes.}
 
+\item{seed}{Seed to set. Defaults to 123.}
+
 \item{...}{Other parameters for fastLink.}
+}
+\value{
+A nested list of matched dataframes, fastLink output, and arguments.
 }
 \description{
 This function performs probabilistic record linkage between all user-supplied
