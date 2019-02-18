@@ -21,7 +21,7 @@ changes_report <- function(changes,
   change_prop <- change_n <- totalA <- totalB <- NULL
   out <- data.frame(
     labels = c(
-      c("Exact Matches", "Changes", "Dropped", "Added"), varnames
+      c("Exact Matches", "Changed", "Dropped", "Added"), varnames
     ),
     totalA = rep(
       sum(

@@ -138,6 +138,8 @@ vrmatch <- function(date_df,
       inter <- lapply(
         inter, function(x) x %>% dplyr::mutate(row_id = dplyr::row_number())
       )
+      print("The interim list has the following number of rows: ")
+      print(unlist(lapply(inter, nrow)))
       ## If there are less than three rows in each database, don't match.
       ## Regard them as nonmatches. This is especially because in tableCounts,
       ## if these few obs have many NA in fields or
@@ -154,8 +156,10 @@ vrmatch <- function(date_df,
             partial.match = partial.match,
             ...
           )
+        print("fastLink running is complete.")
         match <- match_out(inter, f.out)
       } else {
+        print("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
       }
       ## Delete mismatches, which are interim objects.
@@ -169,6 +173,7 @@ vrmatch <- function(date_df,
     }
     ## Track changes and summarize them.
     changes <- changes_extract(match, varnames = vars_change, nrow = nrow)
+    print("Changes are extracted.")
     save(
       changes,
       file = file.path(
