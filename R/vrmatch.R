@@ -59,6 +59,7 @@
 #' Defaults to "date_label".
 #' @param nrow Name of list element which will contain the number of rows
 #' of the input list dataframes.
+#' @param seed Seed to set. Defaults to 123.
 #' @param ... Other parameters for fastLink.
 #'
 #' @export
@@ -85,7 +86,9 @@ vrmatch <- function(date_df,
                     file_type = ".Rda",
                     date_label = "date_label",
                     nrow = "nrow",
+                    seed = 123,
                     ...) {
+  set.seed(seed)
   if (!is.null(varnames_str) &
     sum(!(varnames_str %in% varnames)) != 0) {
     stop("String variables list is not a subset of the variable list.")
