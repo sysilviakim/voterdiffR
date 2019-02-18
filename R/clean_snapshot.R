@@ -22,6 +22,8 @@
 #' Defaults to "clean_df".
 #' @param clean_prefix File prefixes for cleaned snapshots.
 #' This replaces the existing file prefix. Defaults to "df_cleaned_".
+#' @param clean_suffix File suffixes for cleaned snapshots.
+#' Defaults to empty string.
 #' @param save_type How to export the cleaned dataframe.
 #' Defaults to Rda and fst.
 #' @param id How the snapshot files are formatted/labelled for their IDs.
@@ -68,6 +70,7 @@ clean_snapshot <- function(date_df = NULL,
                            file_type = ".txt",
                            path_clean = "clean_df",
                            clean_prefix = "df_cleaned_",
+                           clean_suffix = "",
                            save_type = c("rda", "fst"),
                            id = "%m%d%y",
                            rec = FALSE,
@@ -129,14 +132,16 @@ clean_snapshot <- function(date_df = NULL,
     if ("rda" %in% tolower(save_type)) {
       save(
         df, file = file.path(
-          path_clean, paste0(clean_prefix, date_df$date_label[i], ".Rda")
+          path_clean,
+          paste0(clean_prefix, date_df$date_label[i], clean_suffix, ".Rda")
         )
       )
     }
     if ("fst" %in% tolower(save_type)) {
       write.fst(
         df, path = file.path(
-          path_clean, paste0(clean_prefix, date_df$date_label[i], ".fst")
+          path_clean,
+          paste0(clean_prefix, date_df$date_label[i], clean_suffix, ".fst")
         )
       )
     }

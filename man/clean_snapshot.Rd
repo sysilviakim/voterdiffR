@@ -8,8 +8,8 @@ clean_snapshot(date_df = NULL, start = "2018-04-26",
   end = "2021-01-01", path = "7z",
   pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type = ".txt",
   path_clean = "clean_df", clean_prefix = "df_cleaned_",
-  save_type = c("rda", "fst"), id = "\%m\%d\%y", rec = FALSE,
-  per = 1, prefix = "Cntywd_", varnames = NULL,
+  clean_suffix = "", save_type = c("rda", "fst"), id = "\%m\%d\%y",
+  rec = FALSE, per = 1, prefix = "Cntywd_", varnames = NULL,
   varnames_date = NULL, date_order = "mdy", varnames_num = NULL,
   varnames_first = "szNameFirst", varname_prefix = "sVoterTitle",
   varname_gender = "sGender", varname_email = "szEmailAddress",
@@ -40,6 +40,9 @@ Defaults to "clean_df".}
 
 \item{clean_prefix}{File prefixes for cleaned snapshots.
 This replaces the existing file prefix. Defaults to "df_cleaned_".}
+
+\item{clean_suffix}{File suffixes for cleaned snapshots.
+Defaults to empty string.}
 
 \item{save_type}{How to export the cleaned dataframe.
 Defaults to Rda and fst.}
