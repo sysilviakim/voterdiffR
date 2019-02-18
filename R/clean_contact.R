@@ -8,6 +8,7 @@
 #' or contains only area numbers, they are replaced as NA.
 #'
 #' @import dplyr
+#' @importFrom stringi stri_trans_general
 #'
 #' @param df Input dataframe to be cleaned of uninformative contacts.
 #' @param email Name of the email address field.
@@ -32,10 +33,14 @@ clean_contact <- function(df,
 
   ## Uninformative emails
   ## OCROV particularly has many entries of abc@example.com
-  if (!is.null(email) & length(email_exc) > 0) {
-    for (x in email_exc) {
-      output[[email]] <-
-        ifelse(grepl(x, output[[email]]), NA, output[[email]])
+  if (!is.null(email)) {
+    output[[email]] <-
+      stri_trans_general(tolower(output[[email]]), "latin-ascii")
+    if (length(email_exc) > 0) {
+      for (x in email_exc) {
+        output[[email]] <-
+          ifelse(grepl(x, output[[email]]), NA, output[[email]])
+      }
     }
   }
 

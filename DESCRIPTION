@@ -26,6 +26,7 @@ Imports:
     purrr, 
     tibble, 
     stringr,
+    stringi,
     magrittr, 
     lubridate, 
     fst,
