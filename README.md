@@ -16,9 +16,11 @@ We use CRAN package `fastLink` for record linkage. For more information, visit h
 
 (Forthcoming.)
 
+--------------------------------------------
+
 ## OCROV application
 
-Although the data itself cannot be released to the public for privacy concerns, the following is the series of the code using this package that we run.
+Although the data itself cannot be released to the public for privacy concerns, the following is the series of the code using this package that we run, excluding figures/tables creation and performance assessment.
 
 ```
 ## Setup
@@ -43,6 +45,14 @@ clean_snapshot(
 )
 
 ## Match
+non_addr <- c("szNameLast", "szNameFirst", "dtBirthDate")
+addr <- c("sHouseNum", "sSitusZip")
+vars_all <- c(non_addr, addr)
+
+output <- vrmatch(
+  date_df, varnames = vars_all, varnames_str = setdiff(vars_all, vars_num),
+  varnames_date = intersect(vars_all, vars_date), varnames_num = vars_num
+)
 
 ## Anomaly Detection
 
