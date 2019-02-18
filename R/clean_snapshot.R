@@ -140,5 +140,6 @@ clean_snapshot <- function(date_df = NULL,
         )
       )
     }
+    print(paste("Cleaning for", date_df$date_label[i], "is complete."))
   }
 }
