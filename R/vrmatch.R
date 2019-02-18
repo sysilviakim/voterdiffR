@@ -126,7 +126,9 @@ vrmatch <- function(date_df,
       print(paste0("Matched dataframes loaded for ", day1, " and ", day2, "."))
     } else {
       ## If this is a new match to be, load the cleaned dataframes.
-      orig <- clean_import(path_clean, clean_prefix, clean_suffix, day1, day2)
+      orig <- clean_import(
+        path_clean, clean_prefix, clean_suffix, day1, day2, file_type
+      )
       ## Perform full exact matching if requested to exclude them from PRL.
       inter <- exact_match(orig, "dfA", "dfB", exact_exclude)
       if (!is.null(varnames_id)) {
@@ -180,7 +182,7 @@ vrmatch <- function(date_df,
         path_changes, paste0("change_", day1, "_", day2, ".Rda")
       )
     )
-    tbl <- changes_report(changes, match)
+    tbl <- changes_report(changes, vars_change, nrow = nrow)
     print(paste0("Change summaries for ", day1, " and ", day2, ":"))
     print(tbl)
     save(
