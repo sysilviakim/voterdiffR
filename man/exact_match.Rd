@@ -2,7 +2,7 @@
 % Please edit documentation in R/exact_match.R
 \name{exact_match}
 \alias{exact_match}
-\title{Extract Exact Matches Between Two Snapshots}
+\title{Extract Exact Matches by All Fields Between Two Snapshots}
 \usage{
 exact_match(df_list, dfA = "dfA", dfB = "dfB")
 }
@@ -19,8 +19,8 @@ Defaults to "dfB".}
 A list of three dataframes: exact_match, mismatch_A, and mismatch_B.
 }
 \description{
-This function takes a list of two snapshots, performs exact matching
-by dplyr::inner_join, and outputsa list of three dataframes:
+This function takes a named list of two snapshots, performs exact matching
+by dplyr::inner_join, and outputs a list of three dataframes:
 the first dataframe contains records that are exact matches between the
 two dataframes. The second dataframe contains records that are only in the
 first snapshot. The third dataframe contains records that are only in the

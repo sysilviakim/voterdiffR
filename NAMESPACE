@@ -3,6 +3,7 @@
 export(clean_contact)
 export(clean_snapshot)
 export(exact_match)
+export(id_match)
 export(snapshot_import)
 export(snapshot_list)
 import(dplyr)

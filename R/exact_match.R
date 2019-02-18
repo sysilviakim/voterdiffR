@@ -1,7 +1,7 @@
-#' Extract Exact Matches Between Two Snapshots
+#' Extract Exact Matches by All Fields Between Two Snapshots
 #'
-#' This function takes a list of two snapshots, performs exact matching
-#' by dplyr::inner_join, and outputsa list of three dataframes:
+#' This function takes a named list of two snapshots, performs exact matching
+#' by dplyr::inner_join, and outputs a list of three dataframes:
 #' the first dataframe contains records that are exact matches between the
 #' two dataframes. The second dataframe contains records that are only in the
 #' first snapshot. The third dataframe contains records that are only in the
