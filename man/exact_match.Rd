@@ -4,7 +4,7 @@
 \alias{exact_match}
 \title{Extract Exact Matches by All Fields Between Two Snapshots}
 \usage{
-exact_match(df_list, dfA = "dfA", dfB = "dfB")
+exact_match(df_list, dfA = "dfA", dfB = "dfB", exact_exclude = TRUE)
 }
 \arguments{
 \item{df_list}{A named list that contains two consecutive snapshots.}
@@ -14,6 +14,9 @@ Defaults to "dfA".}
 
 \item{dfB}{Name of the second snapshot in df_list for exact matching.
 Defaults to "dfB".}
+
+\item{exact_exclude}{Whether to actually perform this extraction.
+Defaults to TRUE.}
 }
 \value{
 A list of three dataframes: exact_match, mismatch_A, and mismatch_B.

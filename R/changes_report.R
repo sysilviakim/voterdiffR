@@ -7,6 +7,7 @@
 #'
 #' @param changes Named list outputed from change_extract.
 #' @param varnames Variables to track changes.
+#' Defaults to NULL.
 #' @param nrow Name of list element which will contain the number of rows
 #' of the input list dataframes.
 #'
@@ -14,7 +15,9 @@
 #'
 #' @export
 
-changes_report <- function(changes, varnames, nrow = "nrow") {
+changes_report <- function(changes,
+                           varnames = NULL,
+                           nrow = "nrow") {
   change_prop <- change_n <- totalA <- totalB <- NULL
   out <- data.frame(
     labels = c(

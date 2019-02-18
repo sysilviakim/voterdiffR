@@ -8,6 +8,7 @@
 #'
 #' @param match List of matched output from vrmatch.
 #' @param varnames Variables to track changes.
+#' Defaults to all variables.
 #' @param nrow Name of list element which will contain the number of rows
 #' of the input list dataframes.
 #'
@@ -15,9 +16,14 @@
 #'
 #' @export
 
-changes_extract <- function(match, varnames, nrow = "nrow") {
+changes_extract <- function(match,
+                            varnames = NULL,
+                            nrow = "nrow") {
   if (nrow %in% varnames) {
     stop("Specify another name for nrow. Currently it is a variable name.")
+  }
+  if (is.null(varnames)) {
+    varnames <- names(match$data$changed_A)
   }
   out <- list()
   dfA <- bind_rows(
@@ -43,4 +49,3 @@ changes_extract <- function(match, varnames, nrow = "nrow") {
   }
   return(out)
 }
-

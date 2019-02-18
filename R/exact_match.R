@@ -14,6 +14,8 @@
 #' Defaults to "dfA".
 #' @param dfB Name of the second snapshot in df_list for exact matching.
 #' Defaults to "dfB".
+#' @param exact_exclude Whether to actually perform this extraction.
+#' Defaults to TRUE.
 #'
 #' @return A list of three dataframes: exact_match, mismatch_A, and mismatch_B.
 #'
@@ -21,14 +23,20 @@
 
 exact_match <- function(df_list,
                         dfA = "dfA",
-                        dfB = "dfB") {
+                        dfB = "dfB",
+                        exact_exclude = TRUE) {
   out <- list()
   df_list[[dfA]] <- df_list[[dfA]] %>% dplyr::mutate_if(is.factor, as.character)
   df_list[[dfB]] <- df_list[[dfB]] %>% dplyr::mutate_if(is.factor, as.character)
-  out[["exact_match"]] <- dplyr::inner_join(df_list[[dfA]], df_list[[dfB]])
-  out[["mismatch_A"]] <- dplyr::anti_join(df_list[[dfA]], out[["full_match"]])
-  out[["mismatch_B"]] <- dplyr::anti_join(df_list[[dfB]], out[["full_match"]])
+  if (exact_exclude == TRUE) {
+    out[["exact_match"]] <- dplyr::inner_join(df_list[[dfA]], df_list[[dfB]])
+    out[["mismatch_A"]] <- dplyr::anti_join(df_list[[dfA]], out[["full_match"]])
+    out[["mismatch_B"]] <- dplyr::anti_join(df_list[[dfB]], out[["full_match"]])
+  } else {
+    out[["exact_match"]] <- df_list[[dfA]][0, ]
+    out[["mismatch_A"]] <- df_list[[dfA]]
+    out[["mismatch_B"]] <- df_list[[dfB]]
+  }
   print("Full matches are extracted.")
   return(out)
 }
-

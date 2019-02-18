@@ -4,12 +4,13 @@
 \alias{changes_extract}
 \title{Changes by Field}
 \usage{
-changes_extract(match, varnames, nrow = "nrow")
+changes_extract(match, varnames = NULL, nrow = "nrow")
 }
 \arguments{
 \item{match}{List of matched output from vrmatch.}
 
-\item{varnames}{Variables to track changes.}
+\item{varnames}{Variables to track changes.
+Defaults to all variables.}
 
 \item{nrow}{Name of list element which will contain the number of rows
 of the input list dataframes.}

@@ -4,12 +4,13 @@
 \alias{changes_report}
 \title{Report Changes Between Snapshots}
 \usage{
-changes_report(changes, varnames, nrow = "nrow")
+changes_report(changes, varnames = NULL, nrow = "nrow")
 }
 \arguments{
 \item{changes}{Named list outputed from change_extract.}
 
-\item{varnames}{Variables to track changes.}
+\item{varnames}{Variables to track changes.
+Defaults to NULL.}
 
 \item{nrow}{Name of list element which will contain the number of rows
 of the input list dataframes.}
