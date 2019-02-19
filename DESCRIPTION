@@ -5,7 +5,7 @@ Version: 0.1.0
 Authors@R: as.person(c(
     "Seo-young Silvia Kim <sskim@caltech.edu> [aut, cre]"
   ))
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: Seo-young Silvia Kim <sskim@caltech.edu>
 Description: This package contains replication functions and materials 
   for Kim, Schneider, and Alvarez (2018) 
   Evaluating the Quality of Changes in Voter Registration Databases.
