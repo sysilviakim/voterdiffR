@@ -152,18 +152,25 @@ vrmatch <- function(date_df,
       ## if these few obs have many NA in fields or
       ## there are no underlying true matches, fastLink breaks.
       ## In these extreme small obs cases, makes less sense to do PRL as well.
+      runtime <- f.out <- NULL
       if (nrow(inter$mismatch_A) > 2 & nrow(inter$mismatch_B) > 2) {
-        f.out <-
-          fastLink(
-            dfA = inter$mismatch_A,
-            dfB = inter$mismatch_B,
-            varnames = varnames,
-            stringdist.match = varnames_str,
-            numeric.match = varnames_num,
-            partial.match = partial.match,
-            n.cores = n.cores,
-            ...
-          )
+        tryCatch({
+          runtime <- system.time({
+            f.out <-
+              fastLink(
+                dfA = inter$mismatch_A,
+                dfB = inter$mismatch_B,
+                varnames = varnames,
+                stringdist.match = varnames_str,
+                numeric.match = varnames_num,
+                partial.match = partial.match,
+                n.cores = n.cores,
+                ...
+              )
+          })
+        }, error = function(e) {
+          message(paste0(e, "\n"))
+        })
         print("fastLink running is complete.")
         match <- match_out(inter, f.out)
       } else {
@@ -179,6 +186,7 @@ vrmatch <- function(date_df,
         path_matches = path_matches, path_changes = path_changes,
         path_reports = path_reports, seed = seed
       )
+      match$runtime <- runtime
       save(
         match,
         file = file.path(
