@@ -100,11 +100,11 @@ vrmatch <- function(date_df,
                     ...) {
   set.seed(seed)
   if (!is.null(varnames_str) &
-    sum(!(varnames_str %in% varnames)) != 0) {
+      sum(!(varnames_str %in% varnames)) != 0) {
     stop("String variables list is not a subset of the variable list.")
   }
   if (!is.null(partial.match) &
-    sum(!(partial.match %in% varnames_str)) != 0) {
+      sum(!(partial.match %in% varnames_str)) != 0) {
     stop("Partial match list is not a subset of the string variables list.")
   }
   if (is.null(partial.match)) {
@@ -130,9 +130,9 @@ vrmatch <- function(date_df,
     day2 <- date_df[[date_label]][i + 1]
     if (
       exist_files == TRUE &
-        file.exists(file.path(
-          path_matches, paste0("match_", day1, "_", day2, ".Rda")
-        ))
+      file.exists(file.path(
+        path_matches, paste0("match_", day1, "_", day2, ".Rda")
+      ))
     ) {
       ## If there is already a match output, load it
       load(file.path(path_matches, paste0("match_", day1, "_", day2, ".Rda")))
@@ -185,6 +185,7 @@ vrmatch <- function(date_df,
         print("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
       }
+      assert_match(match, orig)
       ## Delete mismatches, which are interim objects.
       match$data$mismatch_A <- match$data$mismatch_B <- NULL
       match$args <- list(
@@ -283,16 +284,38 @@ assert_inter <- function(inter, orig) {
   )
 }
 
+assert_match <- function(match, orig) {
+  ## Validate the number of rows.
+  assert_that(
+    nrow(match$data$exact_match) + nrow(match$data$id_match_A) +
+      nrow(match$data$changed_A) + nrow(match$data$only_A) == nrow(orig$dfA)
+  )
+  assert_that(
+    nrow(match$data$exact_match) + nrow(match$data$id_match_B) +
+      nrow(match$data$changed_B) + nrow(match$data$only_B) == nrow(orig$dfB)
+  )
+}
+
 match_out <- function(inter, f.out) {
   match <- list(data = inter, matches.out = f.out)
-  match$data$changed_A <-
-    match$data$mismatch_A[f.out$matches$inds.a, ]
-  match$data$only_A <-
-    match$data$mismatch_A[-f.out$matches$inds.a, ]
-  match$data$changed_B <-
-    match$data$mismatch_B[f.out$matches$inds.b, ]
-  match$data$only_B <-
-    match$data$mismatch_B[-f.out$matches$inds.b, ]
+  if (length(f.out$matches$inds.a) == 0) {
+    match$data$changed_A <- match$data$mismatch_A[0, ]
+    match$data$only_A <- match$data$mismatch_A
+  } else {
+    match$data$changed_A <-
+      match$data$mismatch_A[f.out$matches$inds.a, ]
+    match$data$only_A <-
+      match$data$mismatch_A[-f.out$matches$inds.a, ]
+  }
+  if (length(f.out$matches$inds.b) == 0) {
+    match$data$changed_B <- match$data$mismatch_B[0, ]
+    match$data$only_B <- match$data$mismatch_B
+  } else {
+    match$data$changed_B <-
+      match$data$mismatch_B[f.out$matches$inds.b, ]
+    match$data$only_B <-
+      match$data$mismatch_B[-f.out$matches$inds.b, ]
+  }
   return(match)
 }
 
