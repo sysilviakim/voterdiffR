@@ -6,7 +6,8 @@
 #' the snapshots as dfA, dfB, dfC, and so on, to ensure that the output can be
 #' supplied to other functions generically.
 #'
-#' @import dplyr
+#' @importFrom dplyr "%>%"
+#' @importFrom dplyr mutate_if
 #' @importFrom readr read_csv
 #' @importFrom readr read_delim
 #' @importFrom readr locale

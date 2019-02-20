@@ -3,7 +3,8 @@
 #' This function takes the extracted matches from changes_extract,
 #' and then summarizes what has changed between the snapshots compared.
 #'
-#' @import dplyr
+#' @importFrom dplyr "%>%"
+#' @importFrom dplyr mutate
 #'
 #' @param changes Named list outputed from change_extract.
 #' @param varnames Variables to track changes.
@@ -49,7 +50,7 @@ changes_report <- function(changes,
       )
     )
   ) %>%
-    dplyr::mutate(
+    mutate(
       change_prop = change_n / totalB
     )
   return(out)

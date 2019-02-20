@@ -3,6 +3,7 @@
 #' This function takes requested snapshots, import them, clean them, and
 #' export them into Rda and/or fst objects for future calls by vrmatch function.
 #'
+#' @importFrom dplyr "%>%"
 #' @importFrom Kmisc clean_vars
 #' @importFrom fst write.fst
 #'

@@ -7,7 +7,9 @@
 #' The additional dataframes of "id_match_A" and "id_match_B" would contain
 #' records with matches in ID in the respective input dataframes.
 #'
-#' @import dplyr
+#' @importFrom dplyr "%>%"
+#' @importFrom dplyr arrange
+#' @importFrom dplyr bind_rows
 #'
 #' @param df_list A named list that contains two dataframes
 #' to check for ID matches.
@@ -26,16 +28,16 @@ id_match <- function(df_list,
                      dfA = "mismatch_A",
                      dfB = "mismatch_B") {
   for (id in ids) {
-    dfA2 <- df_list[[dfA]] %>% dplyr::arrange(!!as.name(id))
-    dfB2 <- df_list[[dfB]] %>% dplyr::arrange(!!as.name(id))
+    dfA2 <- df_list[[dfA]] %>% arrange(!!as.name(id))
+    dfB2 <- df_list[[dfB]] %>% arrange(!!as.name(id))
     indexA <- which(dfA2[[id]] %in% dfB2[[id]])
     indexB <- which(dfB2[[id]] %in% dfA2[[id]])
 
     if ("id_match_A" %in% names(df_list)) {
       df_list$id_match_A <-
-        dplyr::bind_rows(df_list$id_match_A, dfA2[indexA, ])
+        bind_rows(df_list$id_match_A, dfA2[indexA, ])
       df_list$id_match_B <-
-        dplyr::bind_rows(df_list$id_match_B, dfB2[indexB, ])
+        bind_rows(df_list$id_match_B, dfB2[indexB, ])
     } else {
       df_list$id_match_A <- dfA2[indexA, ]
       df_list$id_match_B <- dfB2[indexB, ]

@@ -8,7 +8,10 @@
 #' second snapshot. This is to take the load off record linkage when the
 #' snapshots are granular, such as daily snapshots.
 #'
-#' @import dplyr
+#' @importFrom dplyr inner_join
+#' @importFrom dplyr anti_join
+#' @importFrom dplyr mutate_if
+#'
 #' @param df_list A named list that contains two consecutive snapshots.
 #' @param dfA Name of the first snapshot in df_list for exact matching.
 #' Defaults to "dfA".
@@ -26,15 +29,17 @@ exact_match <- function(df_list,
                         dfB = "dfB",
                         exact_exclude = TRUE) {
   out <- list()
-  df_list[[dfA]] <- df_list[[dfA]] %>% dplyr::mutate_if(is.factor, as.character)
-  df_list[[dfB]] <- df_list[[dfB]] %>% dplyr::mutate_if(is.factor, as.character)
+  df_list[[dfA]] <- df_list[[dfA]] %>% mutate_if(is.factor, as.character)
+  df_list[[dfB]] <- df_list[[dfB]] %>% mutate_if(is.factor, as.character)
   if (exact_exclude == TRUE) {
-    out[["exact_match"]] <-
-      dplyr::inner_join(df_list[[dfA]], df_list[[dfB]])
-    out[["mismatch_A"]] <-
-      dplyr::anti_join(df_list[[dfA]], out[["exact_match"]])
-    out[["mismatch_B"]] <-
-      dplyr::anti_join(df_list[[dfB]], out[["exact_match"]])
+    suppressMessages({
+      out[["exact_match"]] <-
+        inner_join(df_list[[dfA]], df_list[[dfB]])
+      out[["mismatch_A"]] <-
+        anti_join(df_list[[dfA]], out[["exact_match"]])
+      out[["mismatch_B"]] <-
+        anti_join(df_list[[dfB]], out[["exact_match"]])
+    })
   } else {
     out[["exact_match"]] <- df_list[[dfA]][0, ]
     out[["mismatch_A"]] <- df_list[[dfA]]

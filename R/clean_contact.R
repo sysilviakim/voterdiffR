@@ -7,7 +7,6 @@
 #' Similarly for phone numbers, if they are likely fake such as (999)999-9999
 #' or contains only area numbers, they are replaced as NA.
 #'
-#' @import dplyr
 #' @importFrom stringi stri_trans_general
 #'
 #' @param df Input dataframe to be cleaned of uninformative contacts.
