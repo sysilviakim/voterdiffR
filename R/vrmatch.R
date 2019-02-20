@@ -283,16 +283,38 @@ assert_inter <- function(inter, orig) {
   )
 }
 
+assert_match(match, orig) {
+  ## Validate the number of rows.
+  assert_that(
+    nrow(match$data$exact_match) + nrow(match$data$id_match_A) +
+      nrow(match$data$changed_A) + nrow(match$data$only_A) == nrow(orig$dfA)
+  )
+  assert_that(
+    nrow(match$data$exact_match) + nrow(match$data$id_match_B) +
+      nrow(match$data$changed_B) + nrow(match$data$only_B) == nrow(orig$dfB)
+  )
+}
+
 match_out <- function(inter, f.out) {
   match <- list(data = inter, matches.out = f.out)
-  match$data$changed_A <-
-    match$data$mismatch_A[f.out$matches$inds.a, ]
-  match$data$only_A <-
-    match$data$mismatch_A[-f.out$matches$inds.a, ]
-  match$data$changed_B <-
-    match$data$mismatch_B[f.out$matches$inds.b, ]
-  match$data$only_B <-
-    match$data$mismatch_B[-f.out$matches$inds.b, ]
+  if (length(f.out$matches$inds.a) == 0) {
+    match$data$changed_A <- match$data$mismatch_A[0, ]
+    match$data$only_A <- match$data$mismatch_A
+  } else {
+    match$data$changed_A <-
+      match$data$mismatch_A[f.out$matches$inds.a, ]
+    match$data$only_A <-
+      match$data$mismatch_A[-f.out$matches$inds.a, ]
+  }
+  if (length(f.out$matches$inds.b) == 0) {
+    match$data$changed_B <- match$data$mismatch_B[0, ]
+    match$data$only_B <- match$data$mismatch_B
+  } else {
+    match$data$changed_B <-
+      match$data$mismatch_B[f.out$matches$inds.b, ]
+    match$data$only_B <-
+      match$data$mismatch_B[-f.out$matches$inds.b, ]
+  }
   return(match)
 }
 
