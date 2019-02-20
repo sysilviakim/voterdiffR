@@ -1,3 +1,8 @@
+# voterdiffR
+
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.org/sysilviakim/voterdiffR.svg?branch=master)](https://travis-ci.org/sysilviakim/voterdiffR)<!-- badges: end -->
+
 ## Introduction
 
 This package contains replication functions and materials for Kim, Schneider, and Alvarez (2018) *Evaluating the Quality of Changes in Voter Registration Databases*. 
