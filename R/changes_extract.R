@@ -3,7 +3,8 @@
 #' This function takes a matched output and outputs dataframes that have
 #' changed values in user-specified fields.
 #'
-#' @import dplyr
+#' @importFrom dplyr "%>%"
+#' @importFrom dplyr mutate_if
 #' @importFrom assertthat assert_that
 #'
 #' @param match List of matched output from vrmatch.
@@ -35,7 +36,7 @@ changes_extract <- function(match,
     match$data$changed_B,
     match$data$id_match_B
   ) %>%
-    dplyr::mutate_if(is.factor, as.character)
+    mutate_if(is.factor, as.character)
   assert_that(nrow(dfA) == nrow(dfB))
   out[[nrow]] <- list(
     exact_match = nrow(match$data$exact_match),

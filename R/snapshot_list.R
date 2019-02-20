@@ -4,7 +4,9 @@
 #' file pattern and snapshot IDs by date. The current default values are
 #' tailored to the Orange County setup.
 #'
-#' @import dplyr
+#' @importFrom dplyr "%>%"
+#' @importFrom dplyr mutate
+#' @importFrom dplyr filter
 #' @importFrom lubridate wday
 #'
 #' @param start The start date of the first snapshot.

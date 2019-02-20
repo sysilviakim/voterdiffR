@@ -4,15 +4,15 @@
 \alias{id_match}
 \title{Extract Exact Matches by ID Fields Between Two Dataframes}
 \usage{
-id_match(df_list, ids = "lVoterUniqueID", dfA = "mismatch_A",
-  dfB = "mismatch_B")
+id_match(df_list, ids = c("lVoterUniqueID", "sAffNumber"),
+  dfA = "mismatch_A", dfB = "mismatch_B")
 }
 \arguments{
 \item{df_list}{A named list that contains two dataframes
 to check for ID matches.}
 
 \item{ids}{A vector of internal IDs to iterate for exact match extracts.
-Defaults to "lVoterUniqueID".}
+Defaults to c("lVoterUniqueID", "sAffNumber").}
 
 \item{dfA}{Name of the first snapshot in df_list for exact matching in IDs.
 Defaults to "mismatch_A".}

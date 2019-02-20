@@ -3,9 +3,17 @@
 #' This function performs probabilistic record linkage between all user-supplied
 #' consecutive snapshots of the voter file. Note that the default option is to
 #' exclude exact matches of all fields between two snapshots when performing
-#' the record linkage, for computational reasons.
+#' the record linkage, for computational reasons. Note that for multiple
+#' matchings, the function uses a loop instead of more sophisticated measures
+#' such as purrr::map, because loading and wrangling them simultaneously will
+#' often times bring the machine crashing down.
 #'
-#' @import dplyr
+#' @importFrom dplyr "%>%"
+#' @importFrom dplyr row_number
+#' @importFrom dplyr mutate
+#' @importFrom dplyr mutate_if
+#' @importFrom dplyr bind_rows
+#' @importFrom dplyr tibble
 #' @importFrom parallel detectCores
 #' @importFrom assertthat assert_that
 #' @importFrom fastLink fastLink
@@ -143,7 +151,7 @@ vrmatch <- function(date_df,
       }
       assert_inter(inter, orig)
       inter <- lapply(
-        inter, function(x) x %>% dplyr::mutate(row_id = dplyr::row_number())
+        inter, function(x) x %>% mutate(row_id = row_number())
       )
       print("The interim list has the following number of rows: ")
       print(unlist(lapply(inter, nrow)))
@@ -213,9 +221,9 @@ vrmatch <- function(date_df,
       )
     )
     ## Report is appended with each snapshot matching.
-    final_report <- dplyr::bind_rows(
+    final_report <- bind_rows(
       final_report,
-      tbl %>% dplyr::mutate(date_origin = day2)
+      tbl %>% mutate(date_origin = day2)
     )
   }
   gc(reset = TRUE)
@@ -245,8 +253,8 @@ clean_import <- function(path_clean,
   }
   ## Results differ when variable is Date or POSIXt.
   orig[["dfA"]] <- df %>%
-    dplyr::mutate_if(is.Date, as.numeric) %>%
-    dplyr::mutate_if(is.POSIXt, function(x) as.numeric(as.Date(x)))
+    mutate_if(is.Date, as.numeric) %>%
+    mutate_if(is.POSIXt, function(x) as.numeric(as.Date(x)))
   if (tolower(file_type) == ".rda") {
     load(
       file.path(path_clean, paste0(clean_prefix, day2, clean_suffix, ".Rda"))
@@ -257,8 +265,8 @@ clean_import <- function(path_clean,
     )
   }
   orig[["dfB"]] <- df %>%
-    dplyr::mutate_if(is.Date, as.numeric) %>%
-    dplyr::mutate_if(is.POSIXt, function(x) as.numeric(as.Date(x)))
+    mutate_if(is.Date, as.numeric) %>%
+    mutate_if(is.POSIXt, function(x) as.numeric(as.Date(x)))
   print(paste0("Cleaned dataframes loaded for ", day1, " and ", day2, "."))
   return(orig)
 }
