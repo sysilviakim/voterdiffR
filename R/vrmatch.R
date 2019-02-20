@@ -100,11 +100,11 @@ vrmatch <- function(date_df,
                     ...) {
   set.seed(seed)
   if (!is.null(varnames_str) &
-    sum(!(varnames_str %in% varnames)) != 0) {
+      sum(!(varnames_str %in% varnames)) != 0) {
     stop("String variables list is not a subset of the variable list.")
   }
   if (!is.null(partial.match) &
-    sum(!(partial.match %in% varnames_str)) != 0) {
+      sum(!(partial.match %in% varnames_str)) != 0) {
     stop("Partial match list is not a subset of the string variables list.")
   }
   if (is.null(partial.match)) {
@@ -130,9 +130,9 @@ vrmatch <- function(date_df,
     day2 <- date_df[[date_label]][i + 1]
     if (
       exist_files == TRUE &
-        file.exists(file.path(
-          path_matches, paste0("match_", day1, "_", day2, ".Rda")
-        ))
+      file.exists(file.path(
+        path_matches, paste0("match_", day1, "_", day2, ".Rda")
+      ))
     ) {
       ## If there is already a match output, load it
       load(file.path(path_matches, paste0("match_", day1, "_", day2, ".Rda")))
@@ -185,6 +185,7 @@ vrmatch <- function(date_df,
         print("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
       }
+      assert_inter(match, orig)
       ## Delete mismatches, which are interim objects.
       match$data$mismatch_A <- match$data$mismatch_B <- NULL
       match$args <- list(
@@ -283,7 +284,7 @@ assert_inter <- function(inter, orig) {
   )
 }
 
-assert_match(match, orig) {
+assert_match <- function(match, orig) {
   ## Validate the number of rows.
   assert_that(
     nrow(match$data$exact_match) + nrow(match$data$id_match_A) +
