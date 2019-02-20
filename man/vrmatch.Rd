@@ -89,5 +89,8 @@ A nested list of matched dataframes, fastLink output, and arguments.
 This function performs probabilistic record linkage between all user-supplied
 consecutive snapshots of the voter file. Note that the default option is to
 exclude exact matches of all fields between two snapshots when performing
-the record linkage, for computational reasons.
+the record linkage, for computational reasons. Note that for multiple
+matchings, the function uses a loop instead of more sophisticated measures
+such as purrr::map, because loading and wrangling them simultaneously will
+often times bring the machine crashing down.
 }

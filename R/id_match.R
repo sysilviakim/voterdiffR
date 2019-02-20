@@ -14,7 +14,7 @@
 #' @param df_list A named list that contains two dataframes
 #' to check for ID matches.
 #' @param ids A vector of internal IDs to iterate for exact match extracts.
-#' Defaults to "lVoterUniqueID".
+#' Defaults to c("lVoterUniqueID", "sAffNumber").
 #' @param dfA Name of the first snapshot in df_list for exact matching in IDs.
 #' Defaults to "mismatch_A".
 #' @param dfB Name of the second snapshot in df_list for exact matching in IDs.
@@ -24,7 +24,7 @@
 #' @export
 
 id_match <- function(df_list,
-                     ids = "lVoterUniqueID",
+                     ids = c("lVoterUniqueID", "sAffNumber"),
                      dfA = "mismatch_A",
                      dfB = "mismatch_B") {
   for (id in ids) {
