@@ -185,7 +185,7 @@ vrmatch <- function(date_df,
         print("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
       }
-      assert_inter(match, orig)
+      assert_match(match, orig)
       ## Delete mismatches, which are interim objects.
       match$data$mismatch_A <- match$data$mismatch_B <- NULL
       match$args <- list(
