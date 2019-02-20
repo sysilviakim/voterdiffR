@@ -41,3 +41,7 @@ The records will be true matches if either A or B matches. Vice versa,
 we can also garner true matches based on all true match variables being
 matched.
 }
+\details{
+Note that this differs from fastLink::summary in that we are utilizing
+an externally supplied true match variable.
+}
