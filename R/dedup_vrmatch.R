@@ -132,7 +132,8 @@ adjust_match_dedup <- function(dedup_id = "lVoterUniqueID",
         paste0(dedup_prefix, "match_", day1, "_", day2, dedup_suffix, ".Rda")
       )
     )
-    changes_prev <- changes_extract(match, varnames = vars_change, nrow = nrow)
+    ## changes_prev <-
+    ##   changes_extract(match, varnames = vars_change, nrow = nrow)
     changes <- changes_extract(deduped, varnames = vars_change, nrow = nrow)
     save(
       changes,
@@ -141,10 +142,9 @@ adjust_match_dedup <- function(dedup_id = "lVoterUniqueID",
         paste0(dedup_prefix, "change_", day1, "_", day2, ".Rda")
       )
     )
-    report_prev <- changes_report(changes_prev, vars_change, nrow = nrow)
+    ## report_prev <- changes_report(changes_prev, vars_change, nrow = nrow)
     report <- changes_report(changes, vars_change, nrow = nrow)
     print(paste0("Change summaries for ", day1, " and ", day2, ":"))
-    print(report)
     save(
       report,
       file = file.path(
