@@ -177,6 +177,7 @@ dedup_vrmatch <- function(match, dedup_id = "lVoterUniqueID") {
       group_by(!!as.name(dedup_id)) %>%
       filter(n() > 1)
   )$row
+  out <- match
   if (length(x) > 0) {
     tempA <- match$data$changed_A[x, ] %>%
       mutate(
@@ -205,7 +206,6 @@ dedup_vrmatch <- function(match, dedup_id = "lVoterUniqueID") {
     assert_that(
       sum(!(unique(tempB[[dedup_id]]) %in% tempA[[dedup_id]])) == 0
     )
-    out <- match
     ## Correct A
     out$data$only_A <- bind_rows(
       out$data$only_A, out$data$changed_A[x[y], ]
