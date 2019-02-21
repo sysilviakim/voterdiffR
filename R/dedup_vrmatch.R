@@ -106,10 +106,10 @@ adjust_match_dedup <- function(dedup_id = "lVoterUniqueID",
                                date_label = "date_label",
                                nrow = "nrow") {
   . <- NULL
-  if (dedup_prefix != "" & grepl("_$", dedup_prefix)) {
+  if (dedup_prefix != "" & !grepl("_$", dedup_prefix)) {
     dedup_prefix <- paste0(dedup_prefix, "_")
   }
-  if (dedup_suffix != "" & grepl("^_", dedup_suffix)) {
+  if (dedup_suffix != "" & !grepl("^_", dedup_suffix)) {
     dedup_suffix <- paste0("_", dedup_suffix)
   }
   if (is.null(date_df)) {
