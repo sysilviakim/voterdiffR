@@ -42,6 +42,11 @@
 #'
 #' @param dedup_id The internal ID to correct for duplicates.
 #' Default is "lVoterUniqueID".
+#' @param dedup_prefix File prefix for saving deduped objects for all matches,
+#' changes, and reports. Defaults to "dedup_". If set to empty string as well
+#' as dedup_suffix, this will overwrite the existing pre-deduplication outputs,
+#' and this must be done with caution.
+#' @param dedup_suffix File suffix for saving deduped objects.
 #' @param date_df List of snapshots. Defaults to NULL,
 #' in which case the function will detect all snapshots available.
 #' @param start The start date of the first snapshot.
@@ -81,24 +86,32 @@
 #'
 #' @export
 
-dedup_full <- function(dedup_id = "lVoterUniqueID",
-                       date_df = NULL,
-                       start = "2018-04-26",
-                       end = "2021-01-01",
-                       path = "7z",
-                       pattern = "^(?=.*Cntywd_)(?!.*Hist)",
-                       file_type = ".txt",
-                       id = "%m%d%y",
-                       rec = FALSE,
-                       per = 1,
-                       prefix = "Cntywd_",
-                       path_changes = "changes",
-                       path_reports = "reports",
-                       path_matches = "matches",
-                       vars_change = NULL,
-                       date_label = "date_label",
-                       nrow = "nrow") {
+adjust_match_dedup <- function(dedup_id = "lVoterUniqueID",
+                               dedup_prefix = "dedup_",
+                               dedup_suffix = "",
+                               date_df = NULL,
+                               start = "2018-04-26",
+                               end = "2021-01-01",
+                               path = "7z",
+                               pattern = "^(?=.*Cntywd_)(?!.*Hist)",
+                               file_type = ".txt",
+                               id = "%m%d%y",
+                               rec = FALSE,
+                               per = 1,
+                               prefix = "Cntywd_",
+                               path_changes = "changes",
+                               path_reports = "reports",
+                               path_matches = "matches",
+                               vars_change = NULL,
+                               date_label = "date_label",
+                               nrow = "nrow") {
   . <- NULL
+  if (dedup_prefix != "" & grepl("_$", dedup_prefix)) {
+    dedup_prefix <- paste0(dedup_prefix, "_")
+  }
+  if (dedup_suffix != "" & grepl("^_", dedup_suffix)) {
+    dedup_suffix <- paste0("_", dedup_suffix)
+  }
   if (is.null(date_df)) {
     print("Dedup all snapshot matches.")
     date_df <- snapshot_list(
@@ -115,7 +128,8 @@ dedup_full <- function(dedup_id = "lVoterUniqueID",
     save(
       deduped,
       file = file.path(
-        path_matches, paste0("deduped_", day1, "_", day2, ".Rda")
+        path_matches,
+        paste0(dedup_prefix, "match_", day1, "_", day2, dedup_suffix, ".Rda")
       )
     )
     changes_prev <- changes_extract(match, varnames = vars_change, nrow = nrow)
@@ -123,7 +137,8 @@ dedup_full <- function(dedup_id = "lVoterUniqueID",
     save(
       changes,
       file = file.path(
-        path_changes, paste0("deduped_change_", day1, "_", day2, ".Rda")
+        path_changes,
+        paste0(dedup_prefix, "change_", day1, "_", day2, ".Rda")
       )
     )
     report_prev <- changes_report(changes_prev, vars_change, nrow = nrow)
@@ -133,11 +148,18 @@ dedup_full <- function(dedup_id = "lVoterUniqueID",
     save(
       report,
       file = file.path(
-        path_reports, paste0("deduped_table_", day1, "_", day2, ".Rda")
+        path_reports,
+        paste0(dedup_prefix, "table_", day1, "_", day2, ".Rda")
       )
     )
     final_report[[day2]] <- report
     gc(reset = TRUE)
+    print(
+      paste0(
+        "vrmatch adjusted for snapshot matching between ",
+        day1, " and ", day2, "."
+      )
+    )
   }
   final_report <- final_report %>%
     bind_rows(.id = "date_origin")
