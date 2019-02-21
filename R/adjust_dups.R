@@ -56,7 +56,6 @@
 
 adjust_dups <- function(match, dedup_ids = "lVoterUniqueID") {
   . <- group_id <- NULL
-  print(unlist(lapply(match$data, nrow)))
   vars_all <- match$args$vars_all
   orig_match <- match
   for (dedup_id in dedup_ids) {
