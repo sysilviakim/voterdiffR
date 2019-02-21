@@ -221,10 +221,6 @@ dedup_vrmatch <- function(match, dedup_id = "lVoterUniqueID") {
       nrow(match$data$changed_A) + nrow(match$data$only_A) ==
         nrow(out$data$changed_A) + nrow(out$data$only_A)
     )
-    assert_that(
-      nrow(match$data$changed_B) + nrow(match$data$only_B) ==
-        nrow(out$data$changed_B) + nrow(out$data$only_B)
-    )
     print(paste0(length(x[y]), " cases cleaned."))
   }
   return(out)
