@@ -12,7 +12,8 @@ adjust_vrmatch(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
   id = "\%m\%d\%y", rec = FALSE, per = 1, prefix = "Cntywd_",
   path_changes = "changes", path_reports = "reports",
   path_matches = "matches", vars_change = NULL,
-  date_label = "date_label", nrow = "nrow")
+  date_label = "date_label", nrow = "nrow", path_clean = "clean_df",
+  clean_prefix = "df_cleaned_", clean_suffix = "")
 }
 \arguments{
 \item{dedup_ids}{The ID variables to correct for duplicates.
@@ -76,6 +77,15 @@ Defaults to "date_label".}
 
 \item{nrow}{Name of list element which will contain the number of rows
 of the input list dataframes.}
+
+\item{path_clean}{Path to the cleaned snapshots.
+Defaults to "clean_df".}
+
+\item{clean_prefix}{File prefixes for cleaned snapshots.
+Defaults to "df_cleaned_".}
+
+\item{clean_suffix}{File suffixes for cleaned snapshots.
+Defaults to empty string.}
 }
 \value{
 A named list of dataframes similar to vrmatch output but with

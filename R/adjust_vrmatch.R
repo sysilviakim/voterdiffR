@@ -62,6 +62,12 @@
 #' Defaults to "date_label".
 #' @param nrow Name of list element which will contain the number of rows
 #' of the input list dataframes.
+#' @param path_clean Path to the cleaned snapshots.
+#' Defaults to "clean_df".
+#' @param clean_prefix File prefixes for cleaned snapshots.
+#' Defaults to "df_cleaned_".
+#' @param clean_suffix File suffixes for cleaned snapshots.
+#' Defaults to empty string.
 #'
 #' @return A named list of dataframes similar to vrmatch output but with
 #' perfect duplicates by the matching variables cleaned.
@@ -87,7 +93,10 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
                            path_matches = "matches",
                            vars_change = NULL,
                            date_label = "date_label",
-                           nrow = "nrow") {
+                           nrow = "nrow",
+                           path_clean = "clean_df",
+                           clean_prefix = "df_cleaned_",
+                           clean_suffix = "") {
   . <- NULL
   if (adj_prefix != "" & !grepl("_$", adj_prefix)) {
     adj_prefix <- paste0(adj_prefix, "_")
@@ -106,9 +115,13 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
   for (i in seq(nrow(date_df) - 1)) {
     day1 <- date_df[[date_label]][i]
     day2 <- date_df[[date_label]][i + 1]
+    orig <- clean_import(
+      path_clean, clean_prefix, clean_suffix, day1, day2, file_type
+    )
     load(file.path(path_matches, paste0("match_", day1, "_", day2, ".Rda")))
     adj_match <- adjust_fn(match = match, fn_ids = fn_ids)
     adj_match <- adjust_dups(match = adj_match, dedup_ids = dedup_ids)
+    assert_adj_match(adj_match, orig)
     save(
       adj_match,
       file = file.path(
@@ -118,7 +131,9 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
     )
     ## changes_prev <-
     ##   changes_extract(match, varnames = vars_change, nrow = nrow)
-    adj_changes <- changes_extract(adj_match, varnames = vars_change, nrow = nrow)
+    adj_changes <- changes_extract(
+      adj_match, varnames = vars_change, nrow = nrow
+    )
     save(
       adj_changes,
       file = file.path(
@@ -149,3 +164,26 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
     bind_rows(.id = "date_origin")
   return(final_report)
 }
+
+assert_adj_match <- function(adj_match, orig) {
+  ## Validate the number of rows.
+  assert_that(
+    nrow(adj_match$data$changed_A) == nrow(adj_match$data$changed_B)
+  )
+  assert_that(
+    nrow(adj_match$data$exact_match) +
+      nrow(adj_match$data$id_match_A) +
+      nrow(adj_match$data$changed_A) +
+      nrow(adj_match$data$only_A) ==
+      nrow(orig$dfA)
+  )
+  assert_that(
+    nrow(adj_match$data$exact_match) +
+      nrow(adj_match$data$id_match_B) +
+      nrow(adj_match$data$changed_B) +
+      nrow(adj_match$data$only_B) ==
+      nrow(orig$dfB)
+  )
+}
+
+

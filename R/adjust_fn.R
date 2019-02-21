@@ -29,44 +29,9 @@
 
 adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber")) {
   for (id in fn_ids) {
-    ## Case 1 (false positives involved)
-    x <- c(
-      intersect(match$data$changed_A[[id]], match$data$only_B[[id]]),
-      intersect(match$data$only_A[[id]], match$data$changed_B[[id]])
-    )
-    if (length(x) > 0) {
-      y <- (
-        match$data$changed_A %>% ungroup() %>% mutate(rownames = row_number())
-      )[na.omit(match(x, match$data$changed_A[[id]])), ]$rownames
-      ## Correct A
-      match$data$only_A <- bind_rows(
-        match$data$only_A, match$data$changed_A[y, ]
-      )
-      match$data$changed_A <- match$data$changed_A[-y, ]
-      ## Correct B
-      match$data$only_B <- bind_rows(
-        match$data$only_B, match$data$changed_B[y, ]
-      )
-      match$data$changed_B <- match$data$changed_B[-y, ]
-    }
-    ## Case 2
-    z <- intersect(match$data$only_A[[id]], match$data$only_B[[id]])
-    if (length(z) > 0) {
-      ## Correct A
-      match$data$changed_A <- bind_rows(
-        match$data$changed_A,
-        match$data$only_A[na.omit(match(z, match$data$only_A$lVoterUniqueID)), ]
-      )
-      match$data$only_A <-
-        match$data$only_A[-na.omit(match(z, match$data$only_A$lVoterUniqueID)),]
-      ## Correct B
-      match$data$changed_B <- bind_rows(
-        match$data$changed_B,
-        match$data$only_B[na.omit(match(z, match$data$only_B$lVoterUniqueID)), ]
-      )
-      match$data$only_B <-
-        match$data$only_B[-na.omit(match(z, match$data$only_B$lVoterUniqueID)),]
-    }
+    match <- fn1(match, id)
+    match <- fn2(match, id)
+    match <- fn3(match, id)
     ## Validate the changed results
     assert_that(
       length(intersect(match$data$only_A[[id]], match$data$only_B[[id]])) == 0
@@ -79,9 +44,66 @@ adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber")) {
       nrow(match$data$changed_B) + nrow(match$data$only_B) ==
         nrow(match$data$changed_B) + nrow(match$data$only_B)
     )
-    print(paste0(
-      length(c(x, z)), " cases of false negatives re-matched with ", id, "."
-    ))
   }
   return(match)
 }
+
+fn1 <- function(match, id) {
+  ## Case 1 (false positives involved)
+  x <- c(
+    intersect(match$data$changed_A[[id]], match$data$only_B[[id]]),
+    intersect(match$data$only_A[[id]], match$data$changed_B[[id]])
+  )
+  if (length(x) > 0) {
+    y <- (
+      match$data$changed_A %>% ungroup() %>% mutate(rownames = row_number())
+    )[which(match(match$data$changed_A[[id]], x) > 0), ]$rownames
+    ## Correct A
+    match$data$only_A <- bind_rows(
+      match$data$only_A, match$data$changed_A[y, ]
+    )
+    match$data$changed_A <- match$data$changed_A[-y, ]
+    ## Correct B
+    match$data$only_B <- bind_rows(
+      match$data$only_B, match$data$changed_B[y, ]
+    )
+    match$data$changed_B <- match$data$changed_B[-y, ]
+  }
+  print(paste0(length(x), " cases re-matched with ", id, "."))
+  return(match)
+}
+
+fn2 <- function(match, id) {
+  ## Case 2
+  x <- intersect(match$data$only_A[[id]], match$data$only_B[[id]])
+  if (length(x) > 0) {
+    ## Correct A
+    match$data$changed_A <- bind_rows(
+      match$data$changed_A,
+      match$data$only_A[which(match(match$data$only_A[[id]], x) > 0), ]
+    )
+    match$data$only_A <-
+      match$data$only_A[-which(match(match$data$only_A[[id]], x) > 0),]
+    ## Correct B
+    match$data$changed_B <- bind_rows(
+      match$data$changed_B,
+      match$data$only_B[which(match(match$data$only_B[[id]], x) > 0), ]
+    )
+    match$data$only_B <-
+      match$data$only_B[-which(match(match$data$only_B[[id]], x) > 0),]
+  }
+  print(paste0(length(x), " cases re-matched with ", id, "."))
+  return(match)
+}
+
+fn3 <- function(match, id) {
+  ## Case 3
+  x <- intersect(match$data$changed_B[[id]], match$data$only_B[[id]])
+  if (length(x) > 0) {
+    match$data$only_B <-
+      match$data$only_B[-which(match(match$data$only_B[[id]], x) > 0), ]
+  }
+  print(paste0(length(x), " cases re-matched with ", id, "."))
+  return(match)
+}
+
