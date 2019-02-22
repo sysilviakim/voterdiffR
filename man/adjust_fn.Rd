@@ -7,7 +7,7 @@
 adjust_fn(match, fn_ids = c("lVoterUniqueID", "sAffNumber"))
 }
 \arguments{
-\item{match}{The vrmatch output to correct for false negatives.}
+\item{match}{The vrmatch output to correct false negatives.}
 
 \item{fn_ids}{Voter IDs used in detecting and correcting false negatives.}
 }

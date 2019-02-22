@@ -4,12 +4,18 @@
 \alias{adjust_dups}
 \title{Dedupe Ties in a vrmatch Output}
 \usage{
-adjust_dups(match, dedup_ids = "lVoterUniqueID")
+adjust_dups(match, dedup_ids = c("lVoterUniqueID", "sAffNumber"),
+  tie_break = c("dtOrigRegDate"))
 }
 \arguments{
-\item{match}{The vrmatch output to correct for false negatives.}
+\item{match}{The vrmatch output to correct duplicates.}
 
-\item{dedup_ids}{Voter IDs used in detecting and correcting false negatives.}
+\item{dedup_ids}{Voter IDs used in detecting and correcting duplicates.
+Defaults to c("lVoterUniqueID", "sAffNumber").}
+
+\item{tie_break}{Tie-breaking variable when in anomalous case.
+We keep only the record match that has the same value in this variable.
+Defaults to dtOrigRegDate.}
 }
 \value{
 Corrected vrmatch output.
@@ -41,10 +47,13 @@ a2 has been deleted by the Registrar of Voters. Between two matches
 (1) a1-a1 and (2) a2-a1, we drop (2), and classify a2 as "record only in A".
 
 Sometimes, the following cases happen: a2-a3 vs. a1-a1.
-But in fact, there is a2 in `only_B`: it was just pushed aside by a1 because
-it had the same values in the fields called for matching.
+In most cases, there is a2 in `only_B`: it was just pushed aside by a1
+because it had the same values in the fields called for matching.
 Hence we recommend calling this function after correcting for nonmatches
 that in fact have the same internal IDs (i.e., false negatives).
+
+There are still exceptions, which we will break ties by other variables
+called by `tie_breakers`.
 
 Note that this function is only relevant when using `vrmatch`
 when the reference ID was not used to exclude exact matches. In addition,

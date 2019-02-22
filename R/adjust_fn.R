@@ -20,7 +20,7 @@
 #' @importFrom dplyr mutate
 #' @importFrom assertthat assert_that
 #'
-#' @param match The vrmatch output to correct for false negatives.
+#' @param match The vrmatch output to correct false negatives.
 #' @param fn_ids Voter IDs used in detecting and correcting false negatives.
 #'
 #' @return Corrected vrmatch output.

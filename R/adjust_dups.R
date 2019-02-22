@@ -25,10 +25,13 @@
 #' (1) a1-a1 and (2) a2-a1, we drop (2), and classify a2 as "record only in A".
 #'
 #' Sometimes, the following cases happen: a2-a3 vs. a1-a1.
-#' But in fact, there is a2 in `only_B`: it was just pushed aside by a1 because
-#' it had the same values in the fields called for matching.
+#' In most cases, there is a2 in `only_B`: it was just pushed aside by a1
+#' because it had the same values in the fields called for matching.
 #' Hence we recommend calling this function after correcting for nonmatches
 #' that in fact have the same internal IDs (i.e., false negatives).
+#'
+#' There are still exceptions, which we will break ties by other variables
+#' called by `tie_breakers`.
 #'
 #' Note that this function is only relevant when using `vrmatch`
 #' when the reference ID was not used to exclude exact matches. In addition,
@@ -47,14 +50,20 @@
 #' @importFrom dplyr everything
 #' @importFrom assertthat assert_that
 #'
-#' @param match The vrmatch output to correct for false negatives.
-#' @param dedup_ids Voter IDs used in detecting and correcting false negatives.
+#' @param match The vrmatch output to correct duplicates.
+#' @param dedup_ids Voter IDs used in detecting and correcting duplicates.
+#' Defaults to c("lVoterUniqueID", "sAffNumber").
+#' @param tie_break Tie-breaking variable when in anomalous case.
+#' We keep only the record match that has the same value in this variable.
+#' Defaults to dtOrigRegDate.
 #'
 #' @return Corrected vrmatch output.
 #'
 #' @export
 
-adjust_dups <- function(match, dedup_ids = "lVoterUniqueID") {
+adjust_dups <- function(match,
+                        dedup_ids = c("lVoterUniqueID", "sAffNumber"),
+                        tie_break = c("dtOrigRegDate")) {
   . <- group_id <- NULL
   vars_all <- match$args$vars_all
   orig_match <- match
@@ -68,31 +77,46 @@ adjust_dups <- function(match, dedup_ids = "lVoterUniqueID") {
     )$row
     if (length(x) > 0) {
       tempA <- match$data$changed_A[x, ] %>%
-        mutate(
-          group_id = group_indices(., !!as.name(vars_all))
-        ) %>%
-        select(
-          group_id, everything()
-        )
+        mutate(group_id = group_indices(., !!as.name(vars_all))) %>%
+        select(group_id, everything()) %>%
+        ungroup() %>%
+        mutate(row = row_number())
       tempB <- match$data$changed_B[x, ] %>%
-        mutate(
-          group_id = group_indices(., !!as.name(vars_all))
-        ) %>%
-        select(
-          group_id, everything()
-        )
+        mutate(group_id = group_indices(., !!as.name(vars_all))) %>%
+        select(group_id, everything()) %>%
+        ungroup() %>%
+        mutate(row = row_number())
+
       ## Is there, for groups in tempA, ID that does not match in corresp. B?
       ## i.e., a2-a1 vs. a1-a1 ---> find the a2.
-      y <- (
-        tempA %>%
-          ungroup() %>%
-          mutate(row = row_number()) %>%
-          filter(!(!!as.name(dedup_id) %in% tempB[[dedup_id]]))
-      )$row
-      ## If adjust_fn has been applied the following holds true.
-      assert_that(
-        sum(!(unique(tempB[[dedup_id]]) %in% tempA[[dedup_id]])) == 0
-      )
+      y <- (tempA %>% filter(!(!!as.name(dedup_id) %in% tempB[[dedup_id]])))$row
+
+      ## I expected the following to hold, but no:
+      ## length(setdiff(tempB[[dedup_id]], tempA[[dedup_id]])) == 0
+      ## There are sometimes radical flips from a2/a3 to a1.
+      ## For tie-breaking variables such as dtOrigRegDate, we cannot put it
+      ## on the same page as dedup_ids, because they can be only applied per
+      ## duplicate ID group
+      if (length(setdiff(tempB[[dedup_id]], tempA[[dedup_id]])) > 0) {
+        z <- (
+          tempB %>%
+            filter(
+              !!as.name(dedup_id) %in%
+                setdiff(tempB[[dedup_id]], tempA[[dedup_id]])
+            )
+        )$row
+        tempAa <- tempA[z, ] %>%
+          mutate(group_id = group_indices(., !!as.name(vars_all)))
+        tempBb <- tempB[z, ] %>%
+          mutate(group_id = group_indices(., !!as.name(vars_all)))
+        tempC <- dedup(
+          inner_join(tempAa, tempBb, by = c("group_id", vars_all, tie_break)),
+          vars = vars_all
+        )
+        tempA <- tempA[-setdiff(z, tempC$row.x), ]
+        tempB <- tempB[-setdiff(z, tempC$row.y), ]
+        y <- setdiff(y, setdiff(z, tempC$row.x))
+      }
       ## Correct A
       match$data$only_A <- bind_rows(
         match$data$only_A, match$data$changed_A[x[y], ]
@@ -112,4 +136,10 @@ adjust_dups <- function(match, dedup_ids = "lVoterUniqueID") {
       nrow(orig_match$data$changed_A) + nrow(orig_match$data$only_A)
   )
   return(match)
+}
+
+
+dedup <- function(df, vars = NULL) {
+  if (is.null(vars)) vars <- names(df)
+  return(df[!duplicated(df[,vars]), ])
 }
