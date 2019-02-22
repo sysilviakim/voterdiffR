@@ -146,7 +146,7 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
     )
     ## report_prev <- changes_report(changes_prev, vars_change, nrow = nrow)
     adj_report <- changes_report(adj_changes, vars_change, nrow = nrow)
-    print(paste0("Change summaries for ", day1, " and ", day2, ":"))
+    ## print(paste0("Change summaries for ", day1, " and ", day2, ":"))
     save(
       adj_report,
       file = file.path(
