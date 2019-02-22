@@ -39,8 +39,10 @@
 #' Defaults to subfolder 7z.
 #' @param pattern Regular expression of the file pattern to find.
 #' Defaults to a particular pattern of OCROV files.
-#' @param file_type File type.
+#' @param file_type_snapshot File type for `snapshot_list()`.
 #' Defaults to .txt.
+#' @param file_type_cleaned File type for `clean_import()`.
+#' Defaults to .Rda.
 #' @param id How the snapshot files are formatted/labelled for their IDs.
 #' Defaults to mdy.
 #' @param rec Whether to find files recursively.
@@ -83,7 +85,8 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
                            end = "2021-01-01",
                            path = "7z",
                            pattern = "^(?=.*Cntywd_)(?!.*Hist)",
-                           file_type = ".txt",
+                           file_type_snapshot = ".txt",
+                           file_type_cleaned = ".Rda",
                            id = "%m%d%y",
                            rec = FALSE,
                            per = 1,
@@ -107,8 +110,8 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
   if (is.null(date_df)) {
     print("Dedup all snapshot matches.")
     date_df <- snapshot_list(
-      start = start, end = end, path = path, pattern = pattern,
-      file_type = file_type, id = id, rec = rec, per = per, prefix = prefix
+      start = start, end = end, path = path, pattern = pattern, prefix = prefix,
+      file_type = file_type_snapshot, id = id, rec = rec, per = per
     )
   }
   final_report <- list()
@@ -116,7 +119,7 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
     day1 <- date_df[[date_label]][i]
     day2 <- date_df[[date_label]][i + 1]
     orig <- clean_import(
-      path_clean, clean_prefix, clean_suffix, day1, day2, file_type
+      path_clean, clean_prefix, clean_suffix, day1, day2, file_type_cleaned
     )
     load(file.path(path_matches, paste0("match_", day1, "_", day2, ".Rda")))
     adj_match <- adjust_fn(match = match, fn_ids = fn_ids)

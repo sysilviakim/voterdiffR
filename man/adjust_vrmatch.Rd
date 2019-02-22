@@ -8,12 +8,13 @@ adjust_vrmatch(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
   fn_ids = c("lVoterUniqueID", "sAffNumber"), adj_prefix = "adj_",
   adj_suffix = "", date_df = NULL, start = "2018-04-26",
   end = "2021-01-01", path = "7z",
-  pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type = ".txt",
-  id = "\%m\%d\%y", rec = FALSE, per = 1, prefix = "Cntywd_",
-  path_changes = "changes", path_reports = "reports",
-  path_matches = "matches", vars_change = NULL,
-  date_label = "date_label", nrow = "nrow", path_clean = "clean_df",
-  clean_prefix = "df_cleaned_", clean_suffix = "")
+  pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type_snapshot = ".txt",
+  file_type_cleaned = ".Rda", id = "\%m\%d\%y", rec = FALSE,
+  per = 1, prefix = "Cntywd_", path_changes = "changes",
+  path_reports = "reports", path_matches = "matches",
+  vars_change = NULL, date_label = "date_label", nrow = "nrow",
+  path_clean = "clean_df", clean_prefix = "df_cleaned_",
+  clean_suffix = "")
 }
 \arguments{
 \item{dedup_ids}{The ID variables to correct for duplicates.
@@ -44,8 +45,11 @@ Defaults to subfolder 7z.}
 \item{pattern}{Regular expression of the file pattern to find.
 Defaults to a particular pattern of OCROV files.}
 
-\item{file_type}{File type.
+\item{file_type_snapshot}{File type for `snapshot_list()`.
 Defaults to .txt.}
+
+\item{file_type_cleaned}{File type for `clean_import()`.
+Defaults to .Rda.}
 
 \item{id}{How the snapshot files are formatted/labelled for their IDs.
 Defaults to mdy.}
