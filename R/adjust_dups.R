@@ -116,6 +116,7 @@ adjust_dups <- function(match,
         tempA <- tempA[-setdiff(z, tempC$row.x), ]
         tempB <- tempB[-setdiff(z, tempC$row.y), ]
         y <- setdiff(y, setdiff(z, tempC$row.x))
+        print(paste0(length(setdiff(z, tempC$row.x)), " anomalies adjusted."))
       }
       ## Correct A
       match$data$only_A <- bind_rows(

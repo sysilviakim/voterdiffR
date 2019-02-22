@@ -39,12 +39,9 @@ adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber")) {
     assert_that(length(
       intersect(match$data$changed_A[[id]], match$data$only_A[[id]])
     ) == 0)
-    assert_that(length(
-      intersect(match$data$changed_B[[id]], match$data$only_B[[id]])
-    ) == 0)
-    assert_that(length(
-      intersect(match$data$changed_B[[id]], match$data$only_B[[id]])
-    ) == 0)
+    ## assert_that(length(
+    ##   intersect(match$data$changed_B[[id]], match$data$only_B[[id]])
+    ## ) == 0)
     assert_that(nrow(match$data$changed_A) == nrow(match$data$changed_B))
   }
   return(match)
@@ -69,7 +66,7 @@ fn1 <- function(match, id) {
     match$data$changed_B <- match$data$changed_B[-y, ]
   }
   print(paste0(length(x), " cases re-matched with ", id, "."))
-  ## Case 1-2
+  ## Case 1-2, vice versa
   x <- intersect(match$data$only_A[[id]], match$data$changed_B[[id]])
   if (length(x) > 0) {
     y <- (
@@ -118,8 +115,16 @@ fn3 <- function(match, id) {
   ## Case 3
   x <- intersect(match$data$changed_B[[id]], match$data$only_B[[id]])
   if (length(x) > 0) {
-    match$data$only_B <-
-      match$data$only_B[-which(match(match$data$only_B[[id]], x) > 0), ]
+    if (
+      sum(
+        match$data$changed_B[which(match(match$data$changed_B[[id]], x) > 0), ] !=
+        match$data$only_B[which(match(match$data$only_B[[id]], x) > 0), ],
+        na.rm = TRUE
+      ) == 0
+    ) {
+      match$data$only_B <-
+        match$data$only_B[-which(match(match$data$only_B[[id]], x) > 0), ]
+    }
   }
   print(paste0(length(x), " cases re-matched with ", id, "."))
   return(match)
