@@ -18,6 +18,7 @@
 #' @importFrom dplyr row_number
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr mutate
+#' @importFrom dplyr arrange
 #' @importFrom assertthat assert_that
 #'
 #' @param match The vrmatch output to correct false negatives.
@@ -95,14 +96,16 @@ fn2 <- function(match, id) {
     ## Correct A
     match$data$changed_A <- bind_rows(
       match$data$changed_A,
-      match$data$only_A[which(match(match$data$only_A[[id]], x) > 0), ]
+      match$data$only_A[which(match(match$data$only_A[[id]], x) > 0), ] %>%
+        arrange(!!as.name(id))
     )
     match$data$only_A <-
       match$data$only_A[-which(match(match$data$only_A[[id]], x) > 0), ]
     ## Correct B
     match$data$changed_B <- bind_rows(
       match$data$changed_B,
-      match$data$only_B[which(match(match$data$only_B[[id]], x) > 0), ]
+      match$data$only_B[which(match(match$data$only_B[[id]], x) > 0), ] %>%
+        arrange(!!as.name(id))
     )
     match$data$only_B <-
       match$data$only_B[-which(match(match$data$only_B[[id]], x) > 0), ]
