@@ -113,23 +113,33 @@ adjust_dups <- function(match,
           inner_join(tempAa, tempBb, by = c("group_id", vars_all, tie_break)),
           vars = vars_all
         )
+        if (nrow(tempC) == 0) {
+          ## If we can't clean it out with a tie-breaking variable, choose the
+          ## topmost entry. This happens (no discrimination possible
+          ## even with all types of timestamps).
+          ## In OCROV means this means choosing the earliest entry
+          tempC <- tempAa[-1, ] %>% mutate(row.x = row)
+        }
         tempA <- tempA[-setdiff(z, tempC$row.x), ]
         tempB <- tempB[-setdiff(z, tempC$row.y), ]
         y <- setdiff(y, setdiff(z, tempC$row.x))
         print(paste0(length(setdiff(z, tempC$row.x)), " anomalies adjusted."))
       }
-      ## Correct A
-      match$data$only_A <- bind_rows(
-        match$data$only_A, match$data$changed_A[x[y], ]
-      )
-      match$data$changed_A <- match$data$changed_A[-x[y], ]
-      ## Correct B
-      match$data$changed_B <- match$data$changed_B[-x[y], ]
-      ## Validate the changed results
-      assert_that(
-        sum(duplicated(match$data$changed_B[[dedup_id]])) == 0
-      )
-      print(paste0(length(x[y]), " cases of duplicates adjusted."))
+      if (length(y) > 0) {
+        ## Sometimes, the duplicate affidavit number stays duplicate.
+        ## Correct A
+        match$data$only_A <- bind_rows(
+          match$data$only_A, match$data$changed_A[x[y], ]
+        )
+        match$data$changed_A <- match$data$changed_A[-x[y], ]
+        ## Correct B
+        match$data$changed_B <- match$data$changed_B[-x[y], ]
+        ## Validate the changed results
+        assert_that(
+          sum(duplicated(match$data$changed_B[[dedup_id]])) == 0
+        )
+        print(paste0(length(x[y]), " cases of duplicates adjusted."))
+      }
     }
   }
   assert_that(
@@ -139,8 +149,7 @@ adjust_dups <- function(match,
   return(match)
 }
 
-
 dedup <- function(df, vars = NULL) {
   if (is.null(vars)) vars <- names(df)
-  return(df[!duplicated(df[,vars]), ])
+  return(df[!duplicated(df[, vars]), ])
 }
