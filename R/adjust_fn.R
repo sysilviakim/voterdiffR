@@ -98,14 +98,14 @@ fn2 <- function(match, id) {
       match$data$only_A[which(match(match$data$only_A[[id]], x) > 0), ]
     )
     match$data$only_A <-
-      match$data$only_A[-which(match(match$data$only_A[[id]], x) > 0),]
+      match$data$only_A[-which(match(match$data$only_A[[id]], x) > 0), ]
     ## Correct B
     match$data$changed_B <- bind_rows(
       match$data$changed_B,
       match$data$only_B[which(match(match$data$only_B[[id]], x) > 0), ]
     )
     match$data$only_B <-
-      match$data$only_B[-which(match(match$data$only_B[[id]], x) > 0),]
+      match$data$only_B[-which(match(match$data$only_B[[id]], x) > 0), ]
   }
   print(paste0(length(x), " cases re-matched with ", id, "."))
   return(match)
@@ -117,8 +117,10 @@ fn3 <- function(match, id) {
   if (length(x) > 0) {
     if (
       sum(
-        match$data$changed_B[which(match(match$data$changed_B[[id]], x) > 0), ] !=
-        match$data$only_B[which(match(match$data$only_B[[id]], x) > 0), ],
+        match$data$changed_B[
+          which(match(match$data$changed_B[[id]], x) > 0),
+        ] !=
+          match$data$only_B[which(match(match$data$only_B[[id]], x) > 0), ],
         na.rm = TRUE
       ) == 0
     ) {
@@ -129,4 +131,3 @@ fn3 <- function(match, id) {
   print(paste0(length(x), " cases re-matched with ", id, "."))
   return(match)
 }
-

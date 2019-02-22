@@ -135,7 +135,8 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
     ## changes_prev <-
     ##   changes_extract(match, varnames = vars_change, nrow = nrow)
     adj_changes <- changes_extract(
-      adj_match, varnames = vars_change, nrow = nrow
+      adj_match,
+      varnames = vars_change, nrow = nrow
     )
     save(
       adj_changes,
@@ -188,5 +189,3 @@ assert_adj_match <- function(adj_match, orig) {
       nrow(orig$dfB)
   )
 }
-
-
