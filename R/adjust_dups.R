@@ -48,6 +48,7 @@
 #' @importFrom dplyr group_indices
 #' @importFrom dplyr n
 #' @importFrom dplyr everything
+#' @importFrom dplyr slice
 #' @importFrom assertthat assert_that
 #'
 #' @param match The vrmatch output to correct duplicates.
