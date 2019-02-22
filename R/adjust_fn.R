@@ -12,7 +12,7 @@
 #' not been corrected accordingly and should not be used in inference.
 #'
 #' Also note that this assumes that if a voter ID matches, it is never a false
-#' positive.
+#' positive, and that there are no duplicates by `fn_ids`.
 #'
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr row_number
@@ -33,17 +33,19 @@ adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber")) {
     match <- fn2(match, id)
     match <- fn3(match, id)
     ## Validate the changed results
-    assert_that(
-      length(intersect(match$data$only_A[[id]], match$data$only_B[[id]])) == 0
-    )
-    assert_that(
-      nrow(match$data$changed_A) + nrow(match$data$only_A) ==
-        nrow(match$data$changed_A) + nrow(match$data$only_A)
-    )
-    assert_that(
-      nrow(match$data$changed_B) + nrow(match$data$only_B) ==
-        nrow(match$data$changed_B) + nrow(match$data$only_B)
-    )
+    assert_that(length(
+      intersect(match$data$only_A[[id]], match$data$only_B[[id]])
+    ) == 0)
+    assert_that(length(
+      intersect(match$data$changed_A[[id]], match$data$only_A[[id]])
+    ) == 0)
+    assert_that(length(
+      intersect(match$data$changed_B[[id]], match$data$only_B[[id]])
+    ) == 0)
+    assert_that(length(
+      intersect(match$data$changed_B[[id]], match$data$only_B[[id]])
+    ) == 0)
+    assert_that(nrow(match$data$changed_A) == nrow(match$data$changed_B))
   }
   return(match)
 }
@@ -89,6 +91,8 @@ fn1 <- function(match, id) {
 
 fn2 <- function(match, id) {
   ## Case 2
+  match$data$only_A <- match$data$only_A[!duplicated(match$data$only_A), ]
+  match$data$only_B <- match$data$only_B[!duplicated(match$data$only_B), ]
   x <- intersect(match$data$only_A[[id]], match$data$only_B[[id]])
   if (length(x) > 0) {
     ## Correct A

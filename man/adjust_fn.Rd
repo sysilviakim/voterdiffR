@@ -28,5 +28,5 @@ after the correction, the EM object and et cetera from fastLink has
 not been corrected accordingly and should not be used in inference.
 
 Also note that this assumes that if a voter ID matches, it is never a false
-positive.
+positive, and that there are no duplicates by `fn_ids`.
 }
