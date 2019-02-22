@@ -97,14 +97,9 @@ adjust_dups <- function(match,
       ## For tie-breaking variables such as dtOrigRegDate, we cannot put it
       ## on the same page as dedup_ids, because they can be only applied per
       ## duplicate ID group
-      if (length(setdiff(tempB[[dedup_id]], tempA[[dedup_id]])) > 0) {
-        z <- (
-          tempB %>%
-            filter(
-              !!as.name(dedup_id) %in%
-                setdiff(tempB[[dedup_id]], tempA[[dedup_id]])
-            )
-        )$row
+      exc <- setdiff(tempB[[dedup_id]], tempA[[dedup_id]])
+      if (length(exc) > 0) {
+        z <- (tempB %>% filter(!!as.name(dedup_id) %in% exc))$row
         tempAa <- tempA[z, ] %>%
           mutate(group_id = group_indices(., !!as.name(vars_all)))
         tempBb <- tempB[z, ] %>%
@@ -113,17 +108,28 @@ adjust_dups <- function(match,
           inner_join(tempAa, tempBb, by = c("group_id", vars_all, tie_break)),
           vars = vars_all
         )
+        tempC <- tempAa %>% filter(
+          (group_id %in% tempC) & !(row %in% tempC$row.x)
+        )
         if (nrow(tempC) == 0) {
           ## If we can't clean it out with a tie-breaking variable, choose the
           ## topmost entry. This happens (no discrimination possible
           ## even with all types of timestamps).
           ## In OCROV means this means choosing the earliest entry
-          tempC <- tempAa[-1, ] %>% mutate(row.x = row)
+          tempC <- tempAa %>% group_by(group_id) %>% slice(1)
+        } else if (nrow(tempC) < (length(z) - length(exc))) {
+          ## Mixture case
+          tempC <- bind_rows(
+            tempC,
+            tempAa %>% filter(!(group_id %in% tempC$group_id)) %>%
+              group_by(group_id) %>% slice(-1)
+          )
         }
-        tempA <- tempA[-setdiff(z, tempC$row.x), ]
-        tempB <- tempB[-setdiff(z, tempC$row.y), ]
-        y <- setdiff(y, setdiff(z, tempC$row.x))
-        print(paste0(length(setdiff(z, tempC$row.x)), " anomalies adjusted."))
+        ## tempA <- tempA[-setdiff(z, tempC$row.x), ]
+        ## tempB <- tempB[-setdiff(z, tempC$row.y), ]
+        ## Remove from z what matches.
+        y <- setdiff(y, setdiff(z, tempC$row))
+        print(paste0(length(setdiff(z, tempC$row)), " anomalies adjusted."))
       }
       if (length(y) > 0) {
         ## Sometimes, the duplicate affidavit number stays duplicate.
