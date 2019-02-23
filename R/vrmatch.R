@@ -124,7 +124,7 @@ vrmatch <- function(date_df,
       dir.create(p)
     }
   }
-  final_report <- tibble()
+  final_report <- list()
   for (i in 1:(nrow(date_df) - 1)) {
     day1 <- date_df[[date_label]][i]
     day2 <- date_df[[date_label]][i + 1]
@@ -212,22 +212,20 @@ vrmatch <- function(date_df,
         path_changes, paste0("change_", day1, "_", day2, ".Rda")
       )
     )
-    tbl <- changes_report(changes, vars_change, nrow = nrow)
+    report <- changes_report(changes, vars_change, nrow = nrow)
     print(paste0("Change summaries for ", day1, " and ", day2, ":"))
-    print(tbl)
+    print(report)
     save(
-      tbl,
+      report,
       file = file.path(
         path_reports, paste0("table_", day1, "_", day2, ".Rda")
       )
     )
-    ## Report is appended with each snapshot matching.
-    final_report <- bind_rows(
-      final_report,
-      tbl %>% mutate(date_origin = day2)
-    )
+    final_report[[day2]] <- report
+    gc(reset = TRUE)
   }
-  gc(reset = TRUE)
+  final_report <- final_report %>%
+    bind_rows(.id = "date_origin")
   return(final_report)
 }
 
