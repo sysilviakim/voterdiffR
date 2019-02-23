@@ -21,6 +21,7 @@ Depends: R (>= 3.5.0)
 Imports: 
     stats, 
     rlang, 
+    plyr,
     dplyr, 
     readr, 
     purrr, 

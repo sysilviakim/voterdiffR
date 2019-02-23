@@ -101,10 +101,11 @@ adjust_dups <- function(match,
       exc <- setdiff(tempB[[dedup_id]], tempA[[dedup_id]])
       if (length(exc) > 0) {
         z <- (tempB %>% filter(!!as.name(dedup_id) %in% exc))$row
-        tempAa <- tempA[z, ] %>%
-          mutate(group_id = group_indices(., !!as.name(vars_all)))
         tempBb <- tempB[z, ] %>%
           mutate(group_id = group_indices(., !!as.name(vars_all)))
+        ## There can be some typographical variation in A
+        tempAa <- tempA[z, ]
+        tempAa$group_id <- tempBb$group_id
         tempC <- dedup(
           inner_join(tempAa, tempBb, by = c("group_id", vars_all, tie_break)),
           vars = vars_all
@@ -117,7 +118,7 @@ adjust_dups <- function(match,
           ## topmost entry. This happens (no discrimination possible
           ## even with all types of timestamps).
           ## In OCROV means this means choosing the earliest entry
-          tempC <- tempAa %>% group_by(group_id) %>% slice(1)
+          tempC <- tempAa %>% group_by(group_id) %>% slice(-1)
         } else if (nrow(tempC) < (length(z) - length(exc))) {
           ## Mixture case
           tempC <- bind_rows(
