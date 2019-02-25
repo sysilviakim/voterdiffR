@@ -165,7 +165,6 @@ vrmatch <- function(date_df,
       ##     This is also to lessen the computational load.
       inter <- id_match(inter, ids = varnames_id)
       assert_inter(inter, orig)
-      inter <- lapply(inter, function(x) x %>% mutate(row_id = row_number()))
       print("The interim list has the following number of rows: ")
       print(unlist(lapply(inter, nrow)))
 
@@ -189,7 +188,7 @@ vrmatch <- function(date_df,
           runtime <- system.time({
             f.out <-
               fastLink(
-                dfA = f.in$fA, dfB = f.out$fB, n.cores = n.cores,
+                dfA = f.in$fA, dfB = f.in$fB, n.cores = n.cores,
                 varnames = varnames, numeric.match = varnames_num,
                 stringdist.match = varnames_str, partial.match = partial.match,
                 ...
@@ -349,73 +348,46 @@ match_none <- function(inter) {
 
 random_sample <- function(inter, sample_exact, sample_id, exact_exclude,
                           varnames_id, sample_size, sample_perc) {
-  tempA <- tempB <- inter$exact_match[0, ]
+  popA <- popB <- tempA <- tempB <- inter$exact_match[0, ]
   ## If nothing specified, choose 1% of sample. If both, use sample_perc
   if (is.null(sample_size) & is.null(sample_perc)) sample_perc <- 0.01
   if (!is.null(sample_size) & !is.null(sample_perc)) sample_size <- NULL
-  ## (1) All-inclusive random sampling
   if (
+    ## (1) All-inclusive random sampling
     sample_exact == TRUE & exact_exclude == TRUE &
     sample_id == TRUE & !is.null(varnames_id)
   ) {
     print("Adding random sample back to PRL from exact/ID matches.")
-    tempA <- ifelse(
-      is.null(sample_size),
-      sample_frac(
-        bind_rows(inter$exact_match, inter$id_match_A), sample_perc
-      ),
-      sample_n(
-        bind_rows(inter$exact_match, inter$id_match_A),
-        min(sample_size, nrow(bind_rows(inter$exact_match, inter$id_match_A)))
-      )
-    )
-    tempB <- ifelse(
-      is.null(sample_size),
-      sample_frac(
-        bind_rows(inter$exact_match, inter$id_match_B), sample_perc
-      ),
-      sample_n(
-        bind_rows(inter$exact_match, inter$id_match_B),
-        min(sample_size, nrow(bind_rows(inter$exact_match, inter$id_match_B)))
-      )
-    )
+    popA <- bind_rows(inter$exact_match, inter$id_match_A)
+    popB <- bind_rows(inter$exact_match, inter$id_match_B)
   } else if (
+    ## (2) Only random sample from exact matches
     sample_exact == TRUE & exact_exclude == TRUE &
     !(sample_id == TRUE & !is.null(varnames_id))
   ) {
     print("Adding random sample back to PRL from exact matches only.")
-    tempA <- ifelse(
-      is.null(sample_size),
-      sample_frac(inter$exact_match, sample_perc),
-      sample_n(inter$exact_match, min(sample_size, nrow(inter$exact_match)))
-    )
-    tempB <- ifelse(
-      is.null(sample_size),
-      sample_frac(inter$exact_match, sample_perc),
-      sample_n(inter$exact_match, min(sample_size, nrow(inter$exact_match)))
-    )
+    popA <- popB <- inter$exact_match
   } else if (
+    ## (3) Only random sample from non-exact sID matches
     !(sample_exact == TRUE & exact_exclude == TRUE) &
     sample_id == TRUE & !is.null(varnames_id)
   ) {
     print("Adding random sample back to PRL from ID matches only.")
-    tempA <- ifelse(
-      is.null(sample_size),
-      sample_frac(inter$id_match_A, sample_perc),
-      sample_n(inter$id_match_A, min(sample_size, nrow(inter$id_match_A)))
-    )
-    tempB <- ifelse(
-      is.null(sample_size),
-      sample_frac(inter$id_match_B, sample_perc),
-      sample_n(inter$id_match_B, min(sample_size, nrow(inter$id_match_B)))
-    )
+    popA <- inter$id_match_A
+    popB <- inter$id_match_B
   } else {
     print("No random samples added.")
   }
-  return(
-    list(
-      fA = bind_rows(inter$mismatch_A, tempA),
-      fB = bind_rows(inter$mismatch_A, tempA)
-    )
-  )
+  ## If popA and popB are empty dataframes, no rows will be chosen.
+  if (is.null(sample_size)) {
+    tempA <- sample_frac(popA, sample_perc)
+    tempB <- sample_frac(popB, sample_perc)
+  } else {
+    tempA <- sample_n(popA, min(sample_size, nrow(popA)))
+    tempB <- sample_n(popB, min(sample_size, nrow(popB)))
+  }
+  fA <- bind_rows(inter$mismatch_A, tempA)
+  fB <- bind_rows(inter$mismatch_B, tempB)
+  gc(reset = TRUE)
+  return(list(fA = fA, fB = fB))
 }
