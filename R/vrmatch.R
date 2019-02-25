@@ -323,19 +323,26 @@ match_out <- function(inter, f.out, f.in) {
     } else {
       ## Because mismatches were first arguments in bind_row in random_sample
       match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a[which(
-        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
+          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
       )], ]
       match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a[which(
-        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
+          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
       )], ]
       match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b[which(
-        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
+          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
       )], ]
       match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b[which(
-        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
+          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
       )], ]
     }
   }
+  lapply(
+    match$data, function(x) assert_that(sum(rowSums(is.na(x)) == ncol(x)) == 0)
+  )
   return(match)
 }
 
