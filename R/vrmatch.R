@@ -13,7 +13,7 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr mutate_if
 #' @importFrom dplyr bind_rows
-#' @importFrom dplyr tibble
+#' @importFrom dplyr sample_n
 #' @importFrom parallel detectCores
 #' @importFrom assertthat assert_that
 #' @importFrom fastLink fastLink
@@ -142,37 +142,52 @@ vrmatch <- function(date_df,
       orig <- clean_import(
         path_clean, clean_prefix, clean_suffix, day1, day2, file_type
       )
-      ## Perform full exact matching if requested to exclude them from PRL.
+
+      ## (1) Perform full exact matching if requested to exclude them from PRL.
+      ##     This is to lessen the computational load.
       inter <- exact_match(orig, "dfA", "dfB", exact_exclude)
-      if (!is.null(varnames_id)) {
-        inter <- id_match(inter, ids = varnames_id)
-      } else {
-        inter$id_match_A <- inter$id_match_B <- inter$exact_match[0, ]
-      }
+
+      ## (2) Perform ID matching on the mismatched portions if requested
+      ##     to exclude them from PRL.
+      ##     This is also to lessen the computational load.
+      inter <- id_match(inter, ids = varnames_id)
       assert_inter(inter, orig)
-      inter <- lapply(
-        inter, function(x) x %>% mutate(row_id = row_number())
-      )
+      inter <- lapply(inter, function(x) x %>% mutate(row_id = row_number()))
       print("The interim list has the following number of rows: ")
       print(unlist(lapply(inter, nrow)))
-      ## If there are less than three rows in each database, don't match.
+
+      ## (3) Add back a random sample of the excluded portions to approximate
+      ##     the true distribution of each field, if requested.
+      ##     The sample is fixed by the seed and is without replacement.
+      fA <- inter$mismatch_A
+      fB <- inter$mismatch_B
+      if (sample == TRUE & (exact_exclude == TRUE | !is.null(varnames_id))) {
+        print("Adding random sample back to PRL from excluded true matches.")
+        fA <- bind_rows(
+          inter$mismatch_A,
+          sample_n(bind_rows(inter$exact_match, inter$id_match_A))
+        )
+        fB <- bind_rows(
+          inter$mismatch_B,
+          sample_n(bind_rows(inter$exact_match, inter$id_match_B))
+        )
+      }
+
+      ## (4) Perform PRL via fastLink.
+      ## If there are less than three rows in either database, don't match.
       ## Regard them as nonmatches. This is especially because in tableCounts,
       ## if these few obs have many NA in fields or
       ## there are no underlying true matches, fastLink breaks.
       ## In these extreme small obs cases, makes less sense to do PRL as well.
       runtime <- f.out <- NULL
-      if (nrow(inter$mismatch_A) > 2 & nrow(inter$mismatch_B) > 2) {
+      if (nrow(fA) > 2 & nrow(fB) > 2) {
         tryCatch({
           runtime <- system.time({
             f.out <-
               fastLink(
-                dfA = inter$mismatch_A,
-                dfB = inter$mismatch_B,
-                varnames = varnames,
-                stringdist.match = varnames_str,
-                numeric.match = varnames_num,
-                partial.match = partial.match,
-                n.cores = n.cores,
+                dfA = fA, dfB = fB, n.cores = n.cores,
+                varnames = varnames, numeric.match = varnames_num,
+                stringdist.match = varnames_str, partial.match = partial.match,
                 ...
               )
           })
@@ -180,7 +195,7 @@ vrmatch <- function(date_df,
           message(paste0(e, "\n"))
         })
         print("fastLink running is complete.")
-        match <- match_out(inter, f.out)
+        match <- match_out(inter, f.out, sample)
       } else {
         print("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
@@ -224,13 +239,9 @@ vrmatch <- function(date_df,
     final_report[[day2]] <- report
     gc(reset = TRUE)
   }
-  final_report <- final_report %>%
-    bind_rows(.id = "date_origin")
+  final_report <- final_report %>% bind_rows(.id = "date_origin")
   return(final_report)
 }
-
-
-
 
 
 ## Internal helper functions ===================================================
@@ -294,25 +305,32 @@ assert_match <- function(match, orig) {
   ## )
 }
 
-match_out <- function(inter, f.out) {
+match_out <- function(inter, f.out, sample) {
   match <- list(data = inter, matches.out = f.out)
   if (length(f.out$matches$inds.a) == 0) {
-    match$data$changed_A <- match$data$mismatch_A[0, ]
+    match$data$changed_A <- match$data$changed_B <- match$data$mismatch_A[0, ]
     match$data$only_A <- match$data$mismatch_A
-  } else {
-    match$data$changed_A <-
-      match$data$mismatch_A[f.out$matches$inds.a, ]
-    match$data$only_A <-
-      match$data$mismatch_A[-f.out$matches$inds.a, ]
-  }
-  if (length(f.out$matches$inds.b) == 0) {
-    match$data$changed_B <- match$data$mismatch_B[0, ]
     match$data$only_B <- match$data$mismatch_B
   } else {
-    match$data$changed_B <-
-      match$data$mismatch_B[f.out$matches$inds.b, ]
-    match$data$only_B <-
-      match$data$mismatch_B[-f.out$matches$inds.b, ]
+    if (sample == FALSE) {
+      match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a, ]
+      match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a, ]
+      match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b, ]
+      match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b, ]
+    } else {
+      match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a[which(
+        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+      )], ]
+      match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a[which(
+        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+      )], ]
+      match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b[which(
+        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+      )], ]
+      match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b[which(
+        f.out$matches$inds.a <= nrow(inter$mismatch_A)
+      )], ]
+    }
   }
   return(match)
 }
