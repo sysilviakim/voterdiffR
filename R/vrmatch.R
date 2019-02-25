@@ -198,7 +198,7 @@ vrmatch <- function(date_df,
           message(paste0(e, "\n"))
         })
         print("fastLink running is complete.")
-        match <- match_out(inter, f.out, sample)
+        match <- match_out(inter, f.out, f.in)
       } else {
         print("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
@@ -308,19 +308,20 @@ assert_match <- function(match, orig) {
   ## )
 }
 
-match_out <- function(inter, f.out, sample) {
+match_out <- function(inter, f.out, f.in) {
   match <- list(data = inter, matches.out = f.out)
   if (length(f.out$matches$inds.a) == 0) {
     match$data$changed_A <- match$data$changed_B <- match$data$mismatch_A[0, ]
     match$data$only_A <- match$data$mismatch_A
     match$data$only_B <- match$data$mismatch_B
   } else {
-    if (sample == FALSE) {
+    if (nrow(f.in$fA) == nrow(inter$mismatch_A)) {
       match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a, ]
       match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a, ]
       match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b, ]
       match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b, ]
     } else {
+      ## Because mismatches were first arguments in bind_row in random_sample
       match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a[which(
         f.out$matches$inds.a <= nrow(inter$mismatch_A)
       )], ]
