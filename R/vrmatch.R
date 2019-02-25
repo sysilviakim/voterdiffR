@@ -134,7 +134,7 @@ vrmatch <- function(date_df,
   }
   for (p in c(path_changes, path_reports, path_matches)) {
     if (!dir.exists(file.path(p))) {
-      dir.create(p)
+      dir.create(p, recursive = TRUE)
     }
   }
   final_report <- list()

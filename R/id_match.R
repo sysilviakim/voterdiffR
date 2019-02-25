@@ -54,7 +54,7 @@ id_match <- function(df_list,
     }
   } else {
     print("No ID variables specified.")
-    inter$id_match_A <- inter$id_match_B <- inter$exact_match[0, ]
+    df_list$id_match_A <- df_list$id_match_B <- df_list$exact_match[0, ]
   }
   return(df_list)
 }
