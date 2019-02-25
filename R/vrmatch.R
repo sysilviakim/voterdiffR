@@ -14,6 +14,7 @@
 #' @importFrom dplyr mutate_if
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr sample_n
+#' @importFrom dplyr sample_frac
 #' @importFrom parallel detectCores
 #' @importFrom assertthat assert_that
 #' @importFrom fastLink fastLink
@@ -24,8 +25,17 @@
 #' @param date_df Dataframe of list of snapshots.
 #' @param exact_exclude Whether to exclude full exact matches between snapshots
 #' when doing probabilistic record linkage. Defaults to TRUE.
-#' @param sample Whether to add random samples of full exact matches or ID
-#' matches to correct for underlying population's value distributions for
+#' @param sample_exact Whether to add random samples of full exact matches
+#' to correct for underlying population's value distributions for
+#' each field. Defaults to FALSE.
+#' @param sample_size Sample size of the random sample to add.
+#' Defaults to NULL.
+#' @param sample_perc Sample percentage of the random sample to add.
+#' Defaults to NULL. If both `sample_size` and `sample_perc` are NULL,
+#' `sample_perc` is set to 0.01 (1% random sample). If both are non-NULL,
+#' `sample_perc` is chosen over `sample_size`.
+#' @param sample_id Whether to add random samples of ID matches (some changes)
+#' to correct for underlying population's value distributions for
 #' each field. Defaults to FALSE.
 #' @param block Whether to employ blocking.
 #' Defaults to FALSE.
@@ -76,7 +86,10 @@
 
 vrmatch <- function(date_df,
                     exact_exclude = TRUE,
-                    sample = FALSE,
+                    sample_exact = FALSE,
+                    sample_id = FALSE,
+                    sample_size = NULL,
+                    sample_perc = NULL,
                     block = FALSE,
                     path_clean = "clean_df",
                     path_changes = "changes",
@@ -159,19 +172,10 @@ vrmatch <- function(date_df,
       ## (3) Add back a random sample of the excluded portions to approximate
       ##     the true distribution of each field, if requested.
       ##     The sample is fixed by the seed and is without replacement.
-      fA <- inter$mismatch_A
-      fB <- inter$mismatch_B
-      if (sample == TRUE & (exact_exclude == TRUE | !is.null(varnames_id))) {
-        print("Adding random sample back to PRL from excluded true matches.")
-        fA <- bind_rows(
-          inter$mismatch_A,
-          sample_n(bind_rows(inter$exact_match, inter$id_match_A))
-        )
-        fB <- bind_rows(
-          inter$mismatch_B,
-          sample_n(bind_rows(inter$exact_match, inter$id_match_B))
-        )
-      }
+      f.in <- random_sample(
+        inter, sample_exact, sample_id, exact_exclude, varnames_id,
+        sample_size, sample_perc
+      )
 
       ## (4) Perform PRL via fastLink.
       ## If there are less than three rows in either database, don't match.
@@ -180,12 +184,12 @@ vrmatch <- function(date_df,
       ## there are no underlying true matches, fastLink breaks.
       ## In these extreme small obs cases, makes less sense to do PRL as well.
       runtime <- f.out <- NULL
-      if (nrow(fA) > 2 & nrow(fB) > 2) {
+      if (nrow(f.in$fA) > 2 & nrow(f.in$fB) > 2) {
         tryCatch({
           runtime <- system.time({
             f.out <-
               fastLink(
-                dfA = fA, dfB = fB, n.cores = n.cores,
+                dfA = f.in$fA, dfB = f.out$fB, n.cores = n.cores,
                 varnames = varnames, numeric.match = varnames_num,
                 stringdist.match = varnames_str, partial.match = partial.match,
                 ...
@@ -341,4 +345,77 @@ match_none <- function(inter) {
   match$data$only_A <- match$data$mismatch_A
   match$data$only_B <- match$data$mismatch_B
   return(match)
+}
+
+random_sample <- function(inter, sample_exact, sample_id, exact_exclude,
+                          varnames_id, sample_size, sample_perc) {
+  tempA <- tempB <- inter$exact_match[0, ]
+  ## If nothing specified, choose 1% of sample. If both, use sample_perc
+  if (is.null(sample_size) & is.null(sample_perc)) sample_perc <- 0.01
+  if (!is.null(sample_size) & !is.null(sample_perc)) sample_size <- NULL
+  ## (1) All-inclusive random sampling
+  if (
+    sample_exact == TRUE & exact_exclude == TRUE &
+    sample_id == TRUE & !is.null(varnames_id)
+  ) {
+    print("Adding random sample back to PRL from exact/ID matches.")
+    tempA <- ifelse(
+      is.null(sample_size),
+      sample_frac(
+        bind_rows(inter$exact_match, inter$id_match_A), sample_perc
+      ),
+      sample_n(
+        bind_rows(inter$exact_match, inter$id_match_A),
+        min(sample_size, nrow(bind_rows(inter$exact_match, inter$id_match_A)))
+      )
+    )
+    tempB <- ifelse(
+      is.null(sample_size),
+      sample_frac(
+        bind_rows(inter$exact_match, inter$id_match_B), sample_perc
+      ),
+      sample_n(
+        bind_rows(inter$exact_match, inter$id_match_B),
+        min(sample_size, nrow(bind_rows(inter$exact_match, inter$id_match_B)))
+      )
+    )
+  } else if (
+    sample_exact == TRUE & exact_exclude == TRUE &
+    !(sample_id == TRUE & !is.null(varnames_id))
+  ) {
+    print("Adding random sample back to PRL from exact matches only.")
+    tempA <- ifelse(
+      is.null(sample_size),
+      sample_frac(inter$exact_match, sample_perc),
+      sample_n(inter$exact_match, min(sample_size, nrow(inter$exact_match)))
+    )
+    tempB <- ifelse(
+      is.null(sample_size),
+      sample_frac(inter$exact_match, sample_perc),
+      sample_n(inter$exact_match, min(sample_size, nrow(inter$exact_match)))
+    )
+  } else if (
+    !(sample_exact == TRUE & exact_exclude == TRUE) &
+    sample_id == TRUE & !is.null(varnames_id)
+  ) {
+    print("Adding random sample back to PRL from ID matches only.")
+    tempA <- ifelse(
+      is.null(sample_size),
+      sample_frac(inter$id_match_A, sample_perc),
+      sample_n(inter$id_match_A, min(sample_size, nrow(inter$id_match_A)))
+    )
+    tempB <- ifelse(
+      is.null(sample_size),
+      sample_frac(inter$id_match_B, sample_perc),
+      sample_n(inter$id_match_B, min(sample_size, nrow(inter$id_match_B)))
+    )
+  } else {
+    print("No random samples added.")
+  }
+  return(
+    list(
+      fA = bind_rows(inter$mismatch_A, tempA),
+      fB = bind_rows(inter$mismatch_A, tempA)
+    )
+  )
 }
