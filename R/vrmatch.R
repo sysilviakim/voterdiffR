@@ -321,23 +321,20 @@ match_out <- function(inter, f.out, f.in) {
       match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b, ]
       match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b, ]
     } else {
-      ## Because mismatches were first arguments in bind_row in random_sample
-      match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a[which(
+      x <- which(
         (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
           (f.out$matches$inds.b <= nrow(inter$mismatch_B))
-      )], ]
-      match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a[which(
-        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
-          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
-      )], ]
-      match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b[which(
-        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
-          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
-      )], ]
-      match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b[which(
-        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
-          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
-      )], ]
+      )
+      if (length(x) > 0) {
+        ## Because mismatches were first arguments in bind_row in random_sample
+        match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a[x], ]
+        match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a[x], ]
+        match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b[x], ]
+        match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b[x], ]
+      } else {
+        ## Because mismatches were first arguments in bind_row in random_sample
+        match <- match_none(inter)
+      }
     }
   }
   lapply(
