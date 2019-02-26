@@ -27,29 +27,34 @@ id_match <- function(df_list,
                      ids = c("lVoterUniqueID", "sAffNumber"),
                      dfA = "mismatch_A",
                      dfB = "mismatch_B") {
-  for (id in ids) {
-    dfA2 <- df_list[[dfA]] %>% arrange(!!as.name(id))
-    dfB2 <- df_list[[dfB]] %>% arrange(!!as.name(id))
-    indexA <- which(dfA2[[id]] %in% dfB2[[id]])
-    indexB <- which(dfB2[[id]] %in% dfA2[[id]])
+  if (!is.null(ids)) {
+    for (id in ids) {
+      dfA2 <- df_list[[dfA]] %>% arrange(!!as.name(id))
+      dfB2 <- df_list[[dfB]] %>% arrange(!!as.name(id))
+      indexA <- which(dfA2[[id]] %in% dfB2[[id]])
+      indexB <- which(dfB2[[id]] %in% dfA2[[id]])
 
-    if ("id_match_A" %in% names(df_list)) {
-      df_list$id_match_A <-
-        bind_rows(df_list$id_match_A, dfA2[indexA, ])
-      df_list$id_match_B <-
-        bind_rows(df_list$id_match_B, dfB2[indexB, ])
-    } else {
-      df_list$id_match_A <- dfA2[indexA, ]
-      df_list$id_match_B <- dfB2[indexB, ]
+      if ("id_match_A" %in% names(df_list)) {
+        df_list$id_match_A <-
+          bind_rows(df_list$id_match_A, dfA2[indexA, ])
+        df_list$id_match_B <-
+          bind_rows(df_list$id_match_B, dfB2[indexB, ])
+      } else {
+        df_list$id_match_A <- dfA2[indexA, ]
+        df_list$id_match_B <- dfB2[indexB, ]
+      }
+      if (length(indexA) > 0) {
+        df_list[[dfA]] <- dfA2[-indexA, ]
+      }
+      if (length(indexB) > 0) {
+        df_list[[dfB]] <- dfB2[-indexB, ]
+      }
+      print(paste("Exact matches for ID variable", id, "are extracted."))
+      print(unlist(lapply(df_list, nrow)))
     }
-    if (length(indexA) > 0) {
-      df_list[[dfA]] <- dfA2[-indexA, ]
-    }
-    if (length(indexB) > 0) {
-      df_list[[dfB]] <- dfB2[-indexB, ]
-    }
-    print(paste("Exact matches for ID variable", id, "are extracted."))
-    print(unlist(lapply(df_list, nrow)))
+  } else {
+    print("No ID variables specified.")
+    df_list$id_match_A <- df_list$id_match_B <- df_list$exact_match[0, ]
   }
   return(df_list)
 }

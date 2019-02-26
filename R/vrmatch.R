@@ -13,7 +13,8 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr mutate_if
 #' @importFrom dplyr bind_rows
-#' @importFrom dplyr tibble
+#' @importFrom dplyr sample_n
+#' @importFrom dplyr sample_frac
 #' @importFrom parallel detectCores
 #' @importFrom assertthat assert_that
 #' @importFrom fastLink fastLink
@@ -24,8 +25,17 @@
 #' @param date_df Dataframe of list of snapshots.
 #' @param exact_exclude Whether to exclude full exact matches between snapshots
 #' when doing probabilistic record linkage. Defaults to TRUE.
-#' @param sample Whether to add random samples of full exact matches or ID
-#' matches to correct for underlying population's value distributions for
+#' @param sample_exact Whether to add random samples of full exact matches
+#' to correct for underlying population's value distributions for
+#' each field. Defaults to FALSE.
+#' @param sample_size Sample size of the random sample to add.
+#' Defaults to NULL.
+#' @param sample_perc Sample percentage of the random sample to add.
+#' Defaults to NULL. If both `sample_size` and `sample_perc` are NULL,
+#' `sample_perc` is set to 0.01 (1% random sample). If both are non-NULL,
+#' `sample_perc` is chosen over `sample_size`.
+#' @param sample_id Whether to add random samples of ID matches (some changes)
+#' to correct for underlying population's value distributions for
 #' each field. Defaults to FALSE.
 #' @param block Whether to employ blocking.
 #' Defaults to FALSE.
@@ -76,7 +86,10 @@
 
 vrmatch <- function(date_df,
                     exact_exclude = TRUE,
-                    sample = FALSE,
+                    sample_exact = FALSE,
+                    sample_id = FALSE,
+                    sample_size = NULL,
+                    sample_perc = NULL,
                     block = FALSE,
                     path_clean = "clean_df",
                     path_changes = "changes",
@@ -121,7 +134,7 @@ vrmatch <- function(date_df,
   }
   for (p in c(path_changes, path_reports, path_matches)) {
     if (!dir.exists(file.path(p))) {
-      dir.create(p)
+      dir.create(p, recursive = TRUE)
     }
   }
   final_report <- list()
@@ -142,37 +155,42 @@ vrmatch <- function(date_df,
       orig <- clean_import(
         path_clean, clean_prefix, clean_suffix, day1, day2, file_type
       )
-      ## Perform full exact matching if requested to exclude them from PRL.
+
+      ## (1) Perform full exact matching if requested to exclude them from PRL.
+      ##     This is to lessen the computational load.
       inter <- exact_match(orig, "dfA", "dfB", exact_exclude)
-      if (!is.null(varnames_id)) {
-        inter <- id_match(inter, ids = varnames_id)
-      } else {
-        inter$id_match_A <- inter$id_match_B <- inter$exact_match[0, ]
-      }
+
+      ## (2) Perform ID matching on the mismatched portions if requested
+      ##     to exclude them from PRL.
+      ##     This is also to lessen the computational load.
+      inter <- id_match(inter, ids = varnames_id)
       assert_inter(inter, orig)
-      inter <- lapply(
-        inter, function(x) x %>% mutate(row_id = row_number())
-      )
       print("The interim list has the following number of rows: ")
       print(unlist(lapply(inter, nrow)))
-      ## If there are less than three rows in each database, don't match.
+
+      ## (3) Add back a random sample of the excluded portions to approximate
+      ##     the true distribution of each field, if requested.
+      ##     The sample is fixed by the seed and is without replacement.
+      f.in <- random_sample(
+        inter, sample_exact, sample_id, exact_exclude, varnames_id,
+        sample_size, sample_perc
+      )
+
+      ## (4) Perform PRL via fastLink.
+      ## If there are less than three rows in either database, don't match.
       ## Regard them as nonmatches. This is especially because in tableCounts,
       ## if these few obs have many NA in fields or
       ## there are no underlying true matches, fastLink breaks.
       ## In these extreme small obs cases, makes less sense to do PRL as well.
       runtime <- f.out <- NULL
-      if (nrow(inter$mismatch_A) > 2 & nrow(inter$mismatch_B) > 2) {
+      if (nrow(f.in$fA) > 2 & nrow(f.in$fB) > 2) {
         tryCatch({
           runtime <- system.time({
             f.out <-
               fastLink(
-                dfA = inter$mismatch_A,
-                dfB = inter$mismatch_B,
-                varnames = varnames,
-                stringdist.match = varnames_str,
-                numeric.match = varnames_num,
-                partial.match = partial.match,
-                n.cores = n.cores,
+                dfA = f.in$fA, dfB = f.in$fB, n.cores = n.cores,
+                varnames = varnames, numeric.match = varnames_num,
+                stringdist.match = varnames_str, partial.match = partial.match,
                 ...
               )
           })
@@ -180,7 +198,7 @@ vrmatch <- function(date_df,
           message(paste0(e, "\n"))
         })
         print("fastLink running is complete.")
-        match <- match_out(inter, f.out)
+        match <- match_out(inter, f.out, f.in)
       } else {
         print("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
@@ -224,13 +242,9 @@ vrmatch <- function(date_df,
     final_report[[day2]] <- report
     gc(reset = TRUE)
   }
-  final_report <- final_report %>%
-    bind_rows(.id = "date_origin")
+  final_report <- final_report %>% bind_rows(.id = "date_origin")
   return(final_report)
 }
-
-
-
 
 
 ## Internal helper functions ===================================================
@@ -294,26 +308,38 @@ assert_match <- function(match, orig) {
   ## )
 }
 
-match_out <- function(inter, f.out) {
+match_out <- function(inter, f.out, f.in) {
   match <- list(data = inter, matches.out = f.out)
   if (length(f.out$matches$inds.a) == 0) {
-    match$data$changed_A <- match$data$mismatch_A[0, ]
+    match$data$changed_A <- match$data$changed_B <- match$data$mismatch_A[0, ]
     match$data$only_A <- match$data$mismatch_A
-  } else {
-    match$data$changed_A <-
-      match$data$mismatch_A[f.out$matches$inds.a, ]
-    match$data$only_A <-
-      match$data$mismatch_A[-f.out$matches$inds.a, ]
-  }
-  if (length(f.out$matches$inds.b) == 0) {
-    match$data$changed_B <- match$data$mismatch_B[0, ]
     match$data$only_B <- match$data$mismatch_B
   } else {
-    match$data$changed_B <-
-      match$data$mismatch_B[f.out$matches$inds.b, ]
-    match$data$only_B <-
-      match$data$mismatch_B[-f.out$matches$inds.b, ]
+    if (nrow(f.in$fA) == nrow(inter$mismatch_A)) {
+      match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a, ]
+      match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a, ]
+      match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b, ]
+      match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b, ]
+    } else {
+      x <- which(
+        (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
+          (f.out$matches$inds.b <= nrow(inter$mismatch_B))
+      )
+      if (length(x) > 0) {
+        ## Because mismatches were first arguments in bind_row in random_sample
+        match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a[x], ]
+        match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a[x], ]
+        match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b[x], ]
+        match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b[x], ]
+      } else {
+        ## Because mismatches were first arguments in bind_row in random_sample
+        match <- match_none(inter)
+      }
+    }
   }
+  lapply(
+    match$data, function(x) assert_that(sum(rowSums(is.na(x)) == ncol(x)) == 0)
+  )
   return(match)
 }
 
@@ -323,4 +349,50 @@ match_none <- function(inter) {
   match$data$only_A <- match$data$mismatch_A
   match$data$only_B <- match$data$mismatch_B
   return(match)
+}
+
+random_sample <- function(inter, sample_exact, sample_id, exact_exclude,
+                          varnames_id, sample_size, sample_perc) {
+  popA <- popB <- tempA <- tempB <- inter$exact_match[0, ]
+  ## If nothing specified, choose 1% of sample. If both, use sample_perc
+  if (is.null(sample_size) & is.null(sample_perc)) sample_perc <- 0.01
+  if (!is.null(sample_size) & !is.null(sample_perc)) sample_size <- NULL
+  if (
+    ## (1) All-inclusive random sampling
+    sample_exact == TRUE & exact_exclude == TRUE &
+    sample_id == TRUE & !is.null(varnames_id)
+  ) {
+    print("Adding random sample back to PRL from exact/ID matches.")
+    popA <- bind_rows(inter$exact_match, inter$id_match_A)
+    popB <- bind_rows(inter$exact_match, inter$id_match_B)
+  } else if (
+    ## (2) Only random sample from exact matches
+    sample_exact == TRUE & exact_exclude == TRUE &
+    !(sample_id == TRUE & !is.null(varnames_id))
+  ) {
+    print("Adding random sample back to PRL from exact matches only.")
+    popA <- popB <- inter$exact_match
+  } else if (
+    ## (3) Only random sample from non-exact sID matches
+    !(sample_exact == TRUE & exact_exclude == TRUE) &
+    sample_id == TRUE & !is.null(varnames_id)
+  ) {
+    print("Adding random sample back to PRL from ID matches only.")
+    popA <- inter$id_match_A
+    popB <- inter$id_match_B
+  } else {
+    print("No random samples added.")
+  }
+  ## If popA and popB are empty dataframes, no rows will be chosen.
+  if (is.null(sample_size)) {
+    tempA <- sample_frac(popA, sample_perc)
+    tempB <- sample_frac(popB, sample_perc)
+  } else {
+    tempA <- sample_n(popA, min(sample_size, nrow(popA)))
+    tempB <- sample_n(popB, min(sample_size, nrow(popB)))
+  }
+  fA <- bind_rows(inter$mismatch_A, tempA)
+  fB <- bind_rows(inter$mismatch_B, tempB)
+  gc(reset = TRUE)
+  return(list(fA = fA, fB = fB))
 }

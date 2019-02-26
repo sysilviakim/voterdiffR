@@ -4,8 +4,9 @@
 \alias{vrmatch}
 \title{Voter Registration Database Snapshot Matching}
 \usage{
-vrmatch(date_df, exact_exclude = TRUE, sample = FALSE, block = FALSE,
-  path_clean = "clean_df", path_changes = "changes",
+vrmatch(date_df, exact_exclude = TRUE, sample_exact = FALSE,
+  sample_id = FALSE, sample_size = NULL, sample_perc = NULL,
+  block = FALSE, path_clean = "clean_df", path_changes = "changes",
   path_reports = "reports", path_matches = "matches",
   clean_prefix = "df_cleaned_", clean_suffix = "",
   exist_files = FALSE, varnames, varnames_str, varnames_num = NULL,
@@ -19,9 +20,21 @@ vrmatch(date_df, exact_exclude = TRUE, sample = FALSE, block = FALSE,
 \item{exact_exclude}{Whether to exclude full exact matches between snapshots
 when doing probabilistic record linkage. Defaults to TRUE.}
 
-\item{sample}{Whether to add random samples of full exact matches or ID
-matches to correct for underlying population's value distributions for
+\item{sample_exact}{Whether to add random samples of full exact matches
+to correct for underlying population's value distributions for
 each field. Defaults to FALSE.}
+
+\item{sample_id}{Whether to add random samples of ID matches (some changes)
+to correct for underlying population's value distributions for
+each field. Defaults to FALSE.}
+
+\item{sample_size}{Sample size of the random sample to add.
+Defaults to NULL.}
+
+\item{sample_perc}{Sample percentage of the random sample to add.
+Defaults to NULL. If both `sample_size` and `sample_perc` are NULL,
+`sample_perc` is set to 0.01 (1% random sample). If both are non-NULL,
+`sample_perc` is chosen over `sample_size`.}
 
 \item{block}{Whether to employ blocking.
 Defaults to FALSE.}
