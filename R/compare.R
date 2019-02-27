@@ -54,6 +54,8 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
     if (nrow(x1) > 0 & nrow(x2) > 0) {
       ind1 <- intersect(x1[, paste0(row, ".x")], x2[, paste0(row, ".x")])
       ind2 <- intersect(x1[, paste0(row, ".y")], x2[, paste0(row, ".y")])
+    } else {
+      ind1 <- ind2 <- integer(0)
     }
   })
   m1_changed_A <- m1$data$changed_A
@@ -69,8 +71,10 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
     m2_changed_B <- m2_changed_B[-ind2, vars]
   }
   suppressMessages({
-    assert_that(nrow(inner_join(m1_changed_A, m2_changed_A)) == 0)
-    assert_that(nrow(inner_join(m1_changed_B, m2_changed_B)) == 0)
+    assert_that(
+      nrow(inner_join(m1_changed_A, m2_changed_A)) == 0 |
+        nrow(inner_join(m1_changed_B, m2_changed_B)) == 0
+    )
   })
   m1_nrow <- nrow(m1_changed_A)
   m2_nrow <- nrow(m2_changed_A)
