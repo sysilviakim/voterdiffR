@@ -7,6 +7,7 @@
 #' sample selection.
 #'
 #' @importFrom dplyr inner_join
+#' @importFrom tidyr drop_na
 #' @importFrom assertthat assert_that
 #'
 #' @param m1 The first vrmatch output.
@@ -87,12 +88,12 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
         m2_changed_A = m2_changed_A, m2_changed_B = m2_changed_B
       ),
       union = list(
-        changed_A_union = na.omit(bind_rows(
+        changed_A_union = drop_na(bind_rows(
           m1_changed_A, m1$data$changed_A[ind1, vars], m2_changed_A
-        )),
-        changed_B_union = na.omit(bind_rows(
+        ), id),
+        changed_B_union = drop_na(bind_rows(
           m1_changed_B, m1$data$changed_B[ind1, vars], m2_changed_B
-        ))
+        ), id)
       ),
       nrow = list(m1_setdiff_nrow = m1_nrow, m2_setdiff_nrow = m2_nrow)
     )
