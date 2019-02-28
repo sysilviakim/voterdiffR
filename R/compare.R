@@ -7,6 +7,7 @@
 #' sample selection.
 #'
 #' @importFrom dplyr inner_join
+#' @importFrom dplyr full_join
 #' @importFrom tidyr drop_na
 #' @importFrom assertthat assert_that
 #'
@@ -29,22 +30,18 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
   if (is.null(vars)) vars <- df_names
   suppressMessages({
     if (nrow(m1$data$changed_A) > 0) {
-      m1$data$changed_A[row] <- m1$data$changed_B[row] <-
-        seq(nrow(m1$data$changed_A))
+      m1$data$changed_A <- row_seq(m1$data$changed_A)
+      m1$data$changed_B <- row_seq(m1$data$changed_B)
       if (nrow(m1$data$id_match_A) == 0) m1 <- id_return(m1, row, id)
-      if (nrow(m1$data$changed_A) > 0) {
-        m1$data$changed_A[row] <- m1$data$changed_B[row] <-
-          seq(nrow(m1$data$changed_A))
-      }
+      m1$data$changed_A <- row_seq(m1$data$changed_A)
+      m1$data$changed_B <- row_seq(m1$data$changed_B)
     }
     if (nrow(m2$data$changed_A) > 0) {
-      m2$data$changed_A[row] <- m2$data$changed_B[row] <-
-        seq(nrow(m2$data$changed_A))
+      m2$data$changed_A <- row_seq(m2$data$changed_A)
+      m2$data$changed_B <- row_seq(m2$data$changed_B)
       if (nrow(m2$data$id_match_A) == 0) m2 <- id_return(m2, row, id)
-      if (nrow(m2$data$changed_A) > 0) {
-        m2$data$changed_A[row] <- m2$data$changed_B[row] <-
-          seq(nrow(m2$data$changed_A))
-      }
+      m2$data$changed_A <- row_seq(m2$data$changed_A)
+      m2$data$changed_B <- row_seq(m2$data$changed_B)
     }
     x1 <- inner_join(
       m1$data$changed_A, m2$data$changed_A, by = setdiff(df_names, row)
@@ -71,16 +68,21 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
     m2_changed_A <- m2_changed_A[-ind2, vars]
     m2_changed_B <- m2_changed_B[-ind2, vars]
   }
-  suppressMessages({
-    assert_that(
-      nrow(inner_join(m1_changed_A, m2_changed_A)) == 0 |
-        nrow(inner_join(m1_changed_B, m2_changed_B)) == 0
-    )
-  })
   m1_nrow <- nrow(m1_changed_A)
   m2_nrow <- nrow(m2_changed_A)
   print(paste0("From the first vrmatch, ", m1_nrow, " rows are added."))
   print(paste0("From the second match,  ", m2_nrow, " rows are added."))
+  suppressMessages({
+    changed_A_union <- drop_na(bind_rows(
+      m1_changed_A, m1$data$changed_A[ind1, vars], m2_changed_A,
+      full_join(m1$data$id_match_A[, vars], m2$data$id_match_A[, vars])
+    ), id)
+    changed_B_union <- drop_na(bind_rows(
+      m1_changed_B, m1$data$changed_B[ind1, vars], m2_changed_B,
+      full_join(m1$data$id_match_B[, vars], m2$data$id_match_B[, vars])
+    ), id)
+  })
+  gc(reset = TRUE)
   return(
     list(
       setdiff = list(
@@ -88,12 +90,7 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
         m2_changed_A = m2_changed_A, m2_changed_B = m2_changed_B
       ),
       union = list(
-        changed_A_union = drop_na(bind_rows(
-          m1_changed_A, m1$data$changed_A[ind1, vars], m2_changed_A
-        ), id),
-        changed_B_union = drop_na(bind_rows(
-          m1_changed_B, m1$data$changed_B[ind1, vars], m2_changed_B
-        ), id)
+        changed_A_union = changed_A_union, changed_B_union = changed_B_union
       ),
       nrow = list(m1_setdiff_nrow = m1_nrow, m2_setdiff_nrow = m2_nrow)
     )
@@ -109,4 +106,9 @@ id_return <- function(match, row = "row", id = "lVoterUniqueID") {
   match$data$changed_A <- match$data$changed_A[-x, ]
   match$data$changed_B <- match$data$changed_B[-x, ]
   return(match)
+}
+
+row_seq <- function(df, row = "row") {
+  df[row] <- seq(nrow(df))
+  return(df)
 }
