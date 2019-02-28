@@ -27,7 +27,7 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
     stop("Choose another temporary row field name.")
   }
   df_names <- intersect(names(m1$data$changed_A), names(m2$data$changed_A))
-  if (is.null(vars)) vars <- df_names
+  if (is.null(vars)) vars <- setdiff(df_names, "row_id")
   suppressMessages({
     if (nrow(m1$data$changed_A) > 0) {
       m1$data$changed_A <- row_seq(m1$data$changed_A)
@@ -43,12 +43,8 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
       m2$data$changed_A <- row_seq(m2$data$changed_A)
       m2$data$changed_B <- row_seq(m2$data$changed_B)
     }
-    x1 <- inner_join(
-      m1$data$changed_A, m2$data$changed_A, by = setdiff(df_names, row)
-    )
-    x2 <- inner_join(
-      m1$data$changed_B, m2$data$changed_B, by = setdiff(df_names, row)
-    )
+    x1 <- inner_join(m1$data$changed_A, m2$data$changed_A, by = vars)
+    x2 <- inner_join(m1$data$changed_B, m2$data$changed_B, by = vars)
     if (nrow(x1) > 0 & nrow(x2) > 0) {
       ind1 <- intersect(x1[, paste0(row, ".x")], x2[, paste0(row, ".x")])
       ind2 <- intersect(x1[, paste0(row, ".y")], x2[, paste0(row, ".y")])
@@ -60,6 +56,7 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
   m1_changed_B <- m1$data$changed_B
   m2_changed_A <- m2$data$changed_A
   m2_changed_B <- m2$data$changed_B
+  vars <- setdiff(vars, row)
   if (length(ind1) > 0 & sum(is.na(ind1)) == 0) {
     m1_changed_A <- m1_changed_A[-ind1, vars]
     m1_changed_B <- m1_changed_B[-ind1, vars]
@@ -74,11 +71,11 @@ compare <- function(m1, m2, row = "row", id = "lVoterUniqueID", vars = NULL) {
   print(paste0("From the second match,  ", m2_nrow, " rows are added."))
   suppressMessages({
     changed_A_union <- drop_na(bind_rows(
-      m1_changed_A, m1$data$changed_A[ind1, vars], m2_changed_A,
+      m1_changed_A[,vars], m1$data$changed_A[ind1, vars], m2_changed_A[,vars],
       full_join(m1$data$id_match_A[, vars], m2$data$id_match_A[, vars])
     ), id)
     changed_B_union <- drop_na(bind_rows(
-      m1_changed_B, m1$data$changed_B[ind1, vars], m2_changed_B,
+      m1_changed_B[,vars], m1$data$changed_B[ind1, vars], m2_changed_B[,vars],
       full_join(m1$data$id_match_B[, vars], m2$data$id_match_B[, vars])
     ), id)
   })
