@@ -106,6 +106,8 @@ id_return <- function(match, row = "row", id = "lVoterUniqueID") {
 }
 
 row_seq <- function(df, row = "row") {
-  df[row] <- seq(nrow(df))
+  if (nrow(df) > 0) {
+    df[row] <- seq(nrow(df))
+  }
   return(df)
 }
