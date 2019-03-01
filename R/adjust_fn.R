@@ -144,35 +144,37 @@ fn3 <- function(match, id) {
 fn4 <- function(match, id) {
   ## Case 4: both in changed, but matched wrongly
   ## e.g. a1/a2 - a3/a3, a4/a5-a1/a1
-  match$data$changed_A <- row_seq(match$data$changed_A)
-  match$data$changed_B <- row_seq(match$data$changed_B)
-  antiA <- anti_join(
-    match$data$changed_A, match$data$changed_B, by = c("row", id)
-  )
-  antiB <- anti_join(
-    match$data$changed_B, match$data$changed_A, by = c("row", id)
-  )
-  exc <- intersect(antiA[,id], antiB[,id])
-  if (length(exc) > 0) {
-    ## Correct first case
-    rowA <- (antiA %>% filter(!!as.name(id) %in% exc))$row
-    rowB <- inner_join(
-      antiA %>% filter(!!as.name(id) %in% exc),
-      dedup(
-        antiB %>% filter(!!as.name(id) %in% exc),
-        vars = setdiff(names(antiB), "row")
-      ),
-      by = id
-    )$row.y
-    assert_that(length(rowA) == length(rowB))
-    match$data$only_B <- bind_rows(
-      match$data$only_B, match$data$changed_B[rowA, ]
+  if (nrow(match$data$changed_B) > 0) {
+    match$data$changed_A <- row_seq(match$data$changed_A)
+    match$data$changed_B <- row_seq(match$data$changed_B)
+    antiA <- anti_join(
+      match$data$changed_A, match$data$changed_B, by = c("row", id)
     )
-    match$data$changed_B[rowA, ] <- match$data$changed_B[rowB, ]
-    ## Correct second case via adjust_dedup
+    antiB <- anti_join(
+      match$data$changed_B, match$data$changed_A, by = c("row", id)
+    )
+    exc <- intersect(antiA[,id], antiB[,id])
+    if (length(exc) > 0) {
+      ## Correct first case
+      rowA <- (antiA %>% filter(!!as.name(id) %in% exc))$row
+      rowB <- inner_join(
+        antiA %>% filter(!!as.name(id) %in% exc),
+        dedup(
+          antiB %>% filter(!!as.name(id) %in% exc),
+          vars = setdiff(names(antiB), "row")
+        ),
+        by = id
+      )$row.y
+      assert_that(length(rowA) == length(rowB))
+      match$data$only_B <- bind_rows(
+        match$data$only_B, match$data$changed_B[rowA, ]
+      )
+      match$data$changed_B[rowA, ] <- match$data$changed_B[rowB, ]
+      ## Correct second case via adjust_dedup
+    }
+    match$data$changed_A$row <- NULL
+    match$data$changed_B$row <- NULL
+    print(paste0(length(exc), " cases re-matched with ", id, "."))
   }
-  match$data$changed_A$row <- NULL
-  match$data$changed_B$row <- NULL
-  print(paste0(length(exc), " cases re-matched with ", id, "."))
   return(match)
 }
