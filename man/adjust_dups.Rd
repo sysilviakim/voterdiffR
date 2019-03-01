@@ -4,18 +4,13 @@
 \alias{adjust_dups}
 \title{Dedupe Ties in a vrmatch Output}
 \usage{
-adjust_dups(match, dedup_ids = c("lVoterUniqueID", "sAffNumber"),
-  tie_break = c("dtOrigRegDate"))
+adjust_dups(match, dedup_ids = c("lVoterUniqueID", "sAffNumber"))
 }
 \arguments{
 \item{match}{The vrmatch output to correct duplicates.}
 
 \item{dedup_ids}{Voter IDs used in detecting and correcting duplicates.
 Defaults to c("lVoterUniqueID", "sAffNumber").}
-
-\item{tie_break}{Tie-breaking variable when in anomalous case.
-We keep only the record match that has the same value in this variable.
-Defaults to dtOrigRegDate.}
 }
 \value{
 Corrected vrmatch output.

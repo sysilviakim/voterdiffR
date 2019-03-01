@@ -29,31 +29,13 @@
 #'
 #' @export
 
-adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber"), orig) {
+adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber")) {
   for (id in fn_ids) {
     match <- fn1(match, id)
     match <- fn2(match, id)
     match <- fn3(match, id)
     match <- fn4(match, id)
     ## Validate the changed results
-    assert_that(
-      length(setdiff(
-        orig$dfA[, id],
-        c(
-          match$data$exact_match[, id], match$data$id_match_A[, id],
-          match$data$changed_A[, id], match$data$only_A[, id]
-        )
-      )) == 0
-    )
-    assert_that(
-      length(setdiff(
-        orig$dfB[, id],
-        c(
-          match$data$exact_match[, id], match$data$id_match_B[, id],
-          match$data$changed_B[, id], match$data$only_B[, id]
-        )
-      )) == 0
-    )
     assert_that(length(
       intersect(match$data$only_A[[id]], match$data$only_B[[id]])
     ) == 0)
@@ -148,7 +130,7 @@ fn3 <- function(match, id) {
       ), ]
       tempY <- match$data$only_B[which(match(match$data$only_B[[id]], y) > 0), ]
       ## We use plyr::match_df because nrow may not always be 1-1.
-      suppressMessages(tempZ <- plyr::match_df(tempY, tempX))
+      suppressMessages(tempZ <- match_df(tempY, tempX))
       if (nrow(tempZ) > 0) {
         match$data$only_B <-
           match$data$only_B[-which(match(match$data$only_B[[id]], y) > 0), ]
