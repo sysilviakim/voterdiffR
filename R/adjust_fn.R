@@ -29,12 +29,31 @@
 #'
 #' @export
 
-adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber")) {
+adjust_fn <- function(match, fn_ids = c("lVoterUniqueID", "sAffNumber"), orig) {
   for (id in fn_ids) {
     match <- fn1(match, id)
     match <- fn2(match, id)
     match <- fn3(match, id)
+    match <- fn4(match, id)
     ## Validate the changed results
+    assert_that(
+      length(setdiff(
+        orig$dfA[, id],
+        c(
+          match$data$exact_match[, id], match$data$id_match_A[, id],
+          match$data$changed_A[, id], match$data$only_A[, id]
+        )
+      )) == 0
+    )
+    assert_that(
+      length(setdiff(
+        orig$dfB[, id],
+        c(
+          match$data$exact_match[, id], match$data$id_match_B[, id],
+          match$data$changed_B[, id], match$data$only_B[, id]
+        )
+      )) == 0
+    )
     assert_that(length(
       intersect(match$data$only_A[[id]], match$data$only_B[[id]])
     ) == 0)
@@ -129,7 +148,7 @@ fn3 <- function(match, id) {
       ), ]
       tempY <- match$data$only_B[which(match(match$data$only_B[[id]], y) > 0), ]
       ## We use plyr::match_df because nrow may not always be 1-1.
-      suppressMessages(tempZ <- match_df(tempY, tempX))
+      suppressMessages(tempZ <- plyr::match_df(tempY, tempX))
       if (nrow(tempZ) > 0) {
         match$data$only_B <-
           match$data$only_B[-which(match(match$data$only_B[[id]], y) > 0), ]
@@ -137,5 +156,41 @@ fn3 <- function(match, id) {
     }
   }
   print(paste0(length(x), " cases re-matched with ", id, "."))
+  return(match)
+}
+
+fn4 <- function(match, id) {
+  ## Case 4: both in changed, but matched wrongly
+  ## e.g. a1/a2 - a3/a3, a4/a5-a1/a1
+  match$data$changed_A <- row_seq(match$data$changed_A)
+  match$data$changed_B <- row_seq(match$data$changed_B)
+  antiA <- anti_join(
+    match$data$changed_A, match$data$changed_B, by = c("row", id)
+  )
+  antiB <- anti_join(
+    match$data$changed_B, match$data$changed_A, by = c("row", id)
+  )
+  exc <- intersect(antiA[,id], antiB[,id])
+  if (length(exc) > 0) {
+    ## Correct first case
+    rowA <- (antiA %>% filter(!!as.name(id) %in% exc))$row
+    rowB <- inner_join(
+      antiA %>% filter(!!as.name(id) %in% exc),
+      dedup(
+        antiB %>% filter(!!as.name(id) %in% exc),
+        vars = setdiff(names(antiB), "row")
+      ),
+      by = id
+    )$row.y
+    assert_that(length(rowA) == length(rowB))
+    match$data$only_B <- bind_rows(
+      match$data$only_B, match$data$changed_B[rowA, ]
+    )
+    match$data$changed_B[rowA, ] <- match$data$changed_B[rowB, ]
+    ## Correct second case via adjust_dedup
+  }
+  match$data$changed_A$row <- NULL
+  match$data$changed_B$row <- NULL
+  print(paste0(length(exc), " cases re-matched with ", id, "."))
   return(match)
 }

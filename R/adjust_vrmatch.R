@@ -122,7 +122,7 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
       path_clean, clean_prefix, clean_suffix, day1, day2, file_type_cleaned
     )
     load(file.path(path_matches, paste0("match_", day1, "_", day2, ".Rda")))
-    adj_match <- adjust_fn(match = match, fn_ids = fn_ids)
+    adj_match <- adjust_fn(match = match, fn_ids = fn_ids, orig)
     adj_match <- adjust_dups(match = adj_match, dedup_ids = dedup_ids)
     assert_adj_match(adj_match, orig)
     save(
