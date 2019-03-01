@@ -124,7 +124,7 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
     load(file.path(path_matches, paste0("match_", day1, "_", day2, ".Rda")))
     adj_match <- adjust_fn(match = match, fn_ids = fn_ids)
     adj_match <- adjust_dups(match = adj_match, dedup_ids = dedup_ids)
-    assert_adj_match(adj_match, orig, dedup_ids)
+    lapply(dedup_ids, function(x) assert_adj_match(adj_match, orig, x))
     save(
       adj_match,
       file = file.path(
@@ -169,7 +169,7 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
   return(final_report)
 }
 
-assert_adj_match <- function(adj_match, orig, ids) {
+assert_adj_match <- function(adj_match, orig, id) {
   ## Validate the number of rows.
   assert_that(
     nrow(adj_match$data$changed_A) == nrow(adj_match$data$changed_B)
@@ -188,28 +188,22 @@ assert_adj_match <- function(adj_match, orig, ids) {
       nrow(adj_match$data$only_B) ==
       nrow(orig$dfB)
   )
-  for (id in ids) {
-    assert_that(
-      length(setdiff(
-        orig$dfA[, id],
-        c(
-          adj_match$data$exact_adj_match[, id],
-          adj_match$data$id_match_A[, id],
-          adj_match$data$changed_A[, id],
-          adj_match$data$only_A[, id]
-        )
-      )) == 0
-    )
-    assert_that(
-      length(setdiff(
-        orig$dfB[, id],
-        c(
-          adj_match$data$exact_adj_match[, id],
-          adj_match$data$id_match_B[, id],
-          adj_match$data$changed_B[, id],
-          adj_match$data$only_B[, id]
-        )
-      )) == 0
-    )
-  }
+  assert_that(
+    length(setdiff(
+      orig$dfA[, id],
+      c(
+        adj_match$data$exact_match[, id], adj_match$data$id_match_A[, id],
+        adj_match$data$changed_A[, id], adj_match$data$only_A[, id]
+      )
+    )) == 0
+  )
+  assert_that(
+    length(setdiff(
+      orig$dfB[, id],
+      c(
+        adj_match$data$exact_match[, id], adj_match$data$id_match_B[, id],
+        adj_match$data$changed_B[, id], adj_match$data$only_B[, id]
+      )
+    )) == 0
+  )
 }

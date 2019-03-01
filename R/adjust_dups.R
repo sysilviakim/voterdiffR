@@ -125,6 +125,7 @@ adjust_dups <- function(match,
           )
         )
         match$data$changed_B <- match$data$changed_B[-x, ]
+        print(paste0(length(x), " cases of duplicates adjusted."))
       }
     }
   }
