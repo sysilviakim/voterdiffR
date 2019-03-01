@@ -78,12 +78,14 @@ adjust_dups <- function(match,
     )$row
     if (length(x) > 0) {
       tempA <- match$data$changed_A[x, ] %>%
-        mutate(group_id = group_indices(., !!as.name(vars_all))) %>%
+        group_by(.dots = vars_all) %>%
+        mutate(group_id = group_indices()) %>%
         select(group_id, everything()) %>%
         ungroup() %>%
         mutate(row = row_number())
       tempB <- match$data$changed_B[x, ] %>%
-        mutate(group_id = group_indices(., !!as.name(vars_all))) %>%
+        group_by(.dots = vars_all) %>%
+        mutate(group_id = group_indices()) %>%
         select(group_id, everything()) %>%
         ungroup() %>%
         mutate(row = row_number())
@@ -102,7 +104,8 @@ adjust_dups <- function(match,
       if (length(exc) > 0) {
         z <- (tempB %>% filter(!!as.name(dedup_id) %in% exc))$row
         tempBb <- tempB[z, ] %>%
-          mutate(group_id = group_indices(., !!as.name(vars_all)))
+          group_by(.dots = vars_all) %>%
+          mutate(group_id = group_indices())
         ## There can be some typographical variation in A
         tempAa <- tempA[z, ]
         tempAa$group_id <- tempBb$group_id
