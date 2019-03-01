@@ -193,8 +193,10 @@ assert_adj_match <- function(adj_match, orig, ids) {
       length(setdiff(
         orig$dfA[, id],
         c(
-          match$data$exact_match[, id], match$data$id_match_A[, id],
-          match$data$changed_A[, id], match$data$only_A[, id]
+          adj_match$data$exact_adj_match[, id],
+          adj_match$data$id_match_A[, id],
+          adj_match$data$changed_A[, id],
+          adj_match$data$only_A[, id]
         )
       )) == 0
     )
@@ -202,8 +204,10 @@ assert_adj_match <- function(adj_match, orig, ids) {
       length(setdiff(
         orig$dfB[, id],
         c(
-          match$data$exact_match[, id], match$data$id_match_B[, id],
-          match$data$changed_B[, id], match$data$only_B[, id]
+          adj_match$data$exact_adj_match[, id],
+          adj_match$data$id_match_B[, id],
+          adj_match$data$changed_B[, id],
+          adj_match$data$only_B[, id]
         )
       )) == 0
     )

@@ -109,6 +109,22 @@ adjust_dups <- function(match,
           sum(duplicated(match$data$changed_B[[dedup_id]])) == 0
         )
         print(paste0(length(x[y]), " cases of duplicates adjusted."))
+      } else {
+        ## Nothing to be salvaged: no y
+        ## Correct A
+        match$data$only_A <- bind_rows(
+          match$data$only_A, match$data$changed_A[x, ]
+        )
+        match$data$changed_A <- match$data$changed_A[-x, ]
+        ## Correct B
+        match$data$only_B <- bind_rows(
+          match$data$only_B,
+          dedup(
+            match$data$changed_B[x, ],
+            vars = setdiff(names(match$data$changed_B), "row")
+          )
+        )
+        match$data$changed_B <- match$data$changed_B[-x, ]
       }
     }
   }
