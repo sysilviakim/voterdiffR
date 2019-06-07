@@ -117,11 +117,11 @@ clean_snapshot <- function(date_df = NULL,
       clean_vars(
         df = .,
         varnames = varnames,
-        date = date,
+        varnames_date = date,
         date_order = date_order,
-        num = num,
+        varnames_num = num,
         firstname = first,
-        voter_prefix = voter_prefix,
+        prefix = voter_prefix,
         gender_original = gender
       ) %>%
       clean_contact(
