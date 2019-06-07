@@ -15,7 +15,7 @@
 #'
 #' @param path File path to target.
 #' Defaults to current directory.
-#' @param prefix File name prefix.
+#' @param file_prefix File name prefix.
 #' Defaults to empty string.
 #' @param units Snapshot ID e.g. 20180426.
 #' @param suffix File name suffix.
@@ -44,7 +44,7 @@
 #' @export
 
 snapshot_import <- function(path = ".",
-                            prefix = "",
+                            file_prefix = "",
                             units,
                             suffix = "",
                             file_type = ".txt",
@@ -81,7 +81,7 @@ snapshot_import <- function(path = ".",
     print(paste0("Data import for ", unit, " will be executed."))
     if (file_type == ".csv") {
       df <- read_csv(
-        file = file.path(path, paste0(prefix, unit, file_type)),
+        file = file.path(path, paste0(file_prefix, unit, file_type)),
         col_types = col_classes,
         n_max = n_max,
         locale = locale(encoding = enc),
@@ -92,7 +92,7 @@ snapshot_import <- function(path = ".",
       )
     } else if (file_type == ".txt") {
       df <- read_delim(
-        file = file.path(path, paste0(prefix, unit, file_type)),
+        file = file.path(path, paste0(file_prefix, unit, file_type)),
         delim = del,
         col_names = col_names,
         col_types = col_classes,

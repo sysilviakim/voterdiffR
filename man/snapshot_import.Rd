@@ -4,7 +4,7 @@
 \alias{snapshot_import}
 \title{Importing Snapshots into List/Dataframe}
 \usage{
-snapshot_import(path = ".", prefix = "", units, suffix = "",
+snapshot_import(path = ".", file_prefix = "", units, suffix = "",
   file_type = ".txt", col_classes = NULL, n_max = Inf,
   enc = "ISO-8859-1", del = "\\t", quote = "", col_names = TRUE,
   na = "", ref = NULL, ...)
@@ -13,7 +13,7 @@ snapshot_import(path = ".", prefix = "", units, suffix = "",
 \item{path}{File path to target.
 Defaults to current directory.}
 
-\item{prefix}{File name prefix.
+\item{file_prefix}{File name prefix.
 Defaults to empty string.}
 
 \item{units}{Snapshot ID e.g. 20180426.}
