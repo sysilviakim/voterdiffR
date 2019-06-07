@@ -9,12 +9,12 @@ adjust_vrmatch(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
   adj_suffix = "", date_df = NULL, start = "2018-04-26",
   end = "2021-01-01", path = "7z",
   pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type_snapshot = ".txt",
-  file_type_cleaned = ".Rda", id = "\%m\%d\%y", rec = FALSE,
-  per = 1, prefix = "Cntywd_", path_changes = "changes",
-  path_reports = "reports", path_matches = "matches",
-  vars_change = NULL, date_label = "date_label", nrow = "nrow",
-  path_clean = "clean_df", clean_prefix = "df_cleaned_",
-  clean_suffix = "")
+  file_type_cleaned = ".Rda", format = "\%m\%d\%y",
+  recursive = FALSE, period = 1, file_prefix = "Cntywd_",
+  path_changes = "changes", path_reports = "reports",
+  path_matches = "matches", vars_change = NULL,
+  date_label = "date_label", nrow = "nrow", path_clean = "clean_df",
+  clean_prefix = "df_cleaned_", clean_suffix = "")
 }
 \arguments{
 \item{dedup_ids}{The ID variables to correct for duplicates.
@@ -51,17 +51,18 @@ Defaults to .txt.}
 \item{file_type_cleaned}{File type for `clean_import()`.
 Defaults to .Rda.}
 
-\item{id}{How the snapshot files are formatted/labelled for their IDs.
-Defaults to mdy.}
+\item{format}{Format of the date in the snapshot file names.
+Defaults to "\%m\%d\%y".}
 
-\item{rec}{Whether to find files recursively.
+\item{recursive}{Whether to find files recursively.
 Defaults to FALSE.}
 
-\item{per}{Period of each snapshot---whether daily, weekly, and so on.
+\item{period}{Period/interval between each snapshot---
+whether daily, weekly, and so on.
 Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 by argument is allowed.}
 
-\item{prefix}{File name prefix.
+\item{file_prefix}{File name file_prefix.
 Defaults to Cntywd_.}
 
 \item{path_changes}{Path where the extracted changes are output to.
