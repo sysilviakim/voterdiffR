@@ -9,7 +9,7 @@ clean_snapshot(date_df = NULL, start = "2018-04-26",
   pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type = ".txt",
   path_clean = "clean_df", clean_prefix = "df_cleaned_",
   clean_suffix = "", save_type = c("rda", "fst"),
-  format = "\%m\%d\%y", rec = FALSE, period = 1,
+  format = "\%m\%d\%y", recursive = FALSE, period = 1,
   file_prefix = "Cntywd_", varnames = NULL, date = NULL,
   date_order = "mdy", num = NULL, first = "szNameFirst",
   voter_prefix = "sVoterTitle", gender = "sGender",
@@ -49,6 +49,9 @@ Defaults to Rda and fst.}
 
 \item{format}{Format of the date in the snapshot file names.
 Defaults to "\%m\%d\%y".}
+
+\item{recursive}{Whether to find files recursively.
+Defaults to FALSE.}
 
 \item{period}{Period/interval between each snapshot---
 whether daily, weekly, and so on.
@@ -91,9 +94,6 @@ Defaults to "szPhone".}
 Defaults to "___-____".}
 
 \item{...}{Other arguments to be passed to snapshot_import.}
-
-\item{recursive}{Whether to find files recursively.
-Defaults to FALSE.}
 }
 \value{
 Output dataframe with cleaned contacts.
