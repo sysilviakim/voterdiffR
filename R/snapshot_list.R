@@ -47,11 +47,11 @@ snapshot_list <- function(start = "2018-04-26",
     data.frame(
       date = seq(as.Date(start), as.Date(end), by = per)
     ) %>%
-    dplyr::mutate(
+    mutate(
       weekday = wday(date, label = TRUE),
       date_label = format(date, id)
     ) %>%
-    dplyr::filter(
+    filter(
       date_label %in% substr(
         list.files(file.path(path), pattern = file_type, recursive = rec)[
           grepl(
@@ -61,7 +61,7 @@ snapshot_list <- function(start = "2018-04-26",
           )
         ],
         nchar(prefix) + 1,
-        nchar(prefix) + nchar(id)
+        nchar(prefix) + nchar(format(as.Date(start), id))
       )
     )
   return(date_df)
