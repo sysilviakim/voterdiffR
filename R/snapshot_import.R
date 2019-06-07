@@ -73,21 +73,29 @@ snapshot_import <- function(path = ".",
     ref <- letters
   } else if (
     (is.null(ref) & length(units) > 26) |
-    length(units) > length(ref)
+      length(units) > length(ref)
   ) {
     stop("Supply the function with longer generic references.")
   }
   for (unit in units) {
     print(paste0("Data import for ", unit, " will be executed."))
+    file_path <- list.files(
+      path,
+      full.names = TRUE,
+      pattern = paste0(
+        "^", file_prefix, ".*", unit, ".*",
+        file_suffix, ".*", file_type, "$"
+      )
+    )
+    if (length(file_path) > 1) {
+      stop("There are multiple files with the given prefix/suffix/unit.")
+    } else if (length(file_path) == 0) {
+      stop("There are no files with the given prefix/suffix/unit.")
+    }
     if (file_type == ".csv") {
       df <- read_csv(
-        file = list.files(
-          path, full.names = TRUE,
-          pattern = paste0(
-            "^", file_prefix, ".*", unit, ".*",
-            file_suffix, ".*", file_type, "$"
-          )
-        ),
+        file = file_path,
+        col_names = col_names,
         col_types = col_classes,
         n_max = n_max,
         locale = locale(encoding = enc),
@@ -98,13 +106,7 @@ snapshot_import <- function(path = ".",
       )
     } else if (file_type == ".txt") {
       df <- read_delim(
-        file = list.files(
-          path, full.names = TRUE,
-          pattern = paste0(
-            "^", file_prefix, ".*", unit, ".*",
-            file_suffix, ".*", file_type, "$"
-          )
-        ),
+        file = file_path,
         delim = del,
         col_names = col_names,
         col_types = col_classes,
@@ -118,7 +120,7 @@ snapshot_import <- function(path = ".",
     }
     ## Trim the whitespace
     df <- as.data.frame(apply(df, 2, trimws)) %>%
-      dplyr::mutate_if(is.factor, as.character)
+      mutate_if(is.factor, as.character)
     out[[paste0("df", toupper(ref)[which(unit == units)])]] <- df
     print(paste0("Data import for ", unit, " is finished."))
   }
@@ -128,5 +130,3 @@ snapshot_import <- function(path = ".",
     return(out)
   }
 }
-
-
