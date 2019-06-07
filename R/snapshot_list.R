@@ -20,7 +20,7 @@
 #' @param file_type File type.
 #' Defaults to .txt.
 #' @param format Format of the date in the snapshot file names.
-#' Defaults to "%m%d%y".
+#' Defaults to "\%m\%d\%y".
 #' @param recursive Whether to find files recursively.
 #' Defaults to FALSE.
 #' @param period Period/interval between each snapshot---

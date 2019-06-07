@@ -48,7 +48,7 @@ Defaults to empty string.}
 Defaults to Rda and fst.}
 
 \item{format}{Format of the date in the snapshot file names.
-Defaults to "%m%d%y".}
+Defaults to "\%m\%d\%y".}
 
 \item{period}{Period/interval between each snapshot---
 whether daily, weekly, and so on.

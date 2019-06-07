@@ -28,7 +28,7 @@
 #' @param save_type How to export the cleaned dataframe.
 #' Defaults to Rda and fst.
 #' @param format Format of the date in the snapshot file names.
-#' Defaults to "%m%d%y".
+#' Defaults to "\%m\%d\%y".
 #' @param recursive Whether to find files recursively.
 #' Defaults to FALSE.
 #' @param period Period/interval between each snapshot---
@@ -102,14 +102,14 @@ clean_snapshot <- function(date_df = NULL,
       format = format,
       recursive = recursive,
       period = period,
-      prefix = prefix
+      file_prefix = file_prefix
     )
   }
   for (i in seq(nrow(date_df))) {
     df <-
       snapshot_import(
         path = path,
-        prefix = prefix,
+        file_prefix = file_prefix,
         units = date_df$date_label[i],
         file_type = file_type,
         ...
@@ -121,7 +121,7 @@ clean_snapshot <- function(date_df = NULL,
         date_order = date_order,
         num = num,
         firstname = first,
-        prefix = prefix,
+        voter_prefix = voter_prefix,
         gender_original = gender
       ) %>%
       clean_contact(

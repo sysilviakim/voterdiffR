@@ -26,7 +26,7 @@ Defaults to a particular pattern of OCROV files.}
 Defaults to .txt.}
 
 \item{format}{Format of the date in the snapshot file names.
-Defaults to "%m%d%y".}
+Defaults to "\%m\%d\%y".}
 
 \item{recursive}{Whether to find files recursively.
 Defaults to FALSE.}
