@@ -27,7 +27,7 @@
 #' whether daily, weekly, and so on.
 #' Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 #' by argument is allowed.
-#' @param prefix File name prefix.
+#' @param file_prefix File name file_prefix.
 #' Defaults to Cntywd_.
 #'
 #' @return A dataframe that contains available snapshots.
@@ -42,7 +42,7 @@ snapshot_list <- function(start = "2018-04-26",
                           format = "%m%d%y",
                           recursive = FALSE,
                           period = 1,
-                          prefix = "Cntywd_") {
+                          file_prefix = "Cntywd_") {
   date_label <- NULL
   date_df <-
     data.frame(
@@ -67,8 +67,8 @@ snapshot_list <- function(start = "2018-04-26",
             perl = TRUE
           )
         ],
-        nchar(prefix) + 1,
-        nchar(prefix) + nchar(format(as.Date(start), format))
+        nchar(file_prefix) + 1,
+        nchar(file_prefix) + nchar(format(as.Date(start), format))
       )
     )
   return(date_df)

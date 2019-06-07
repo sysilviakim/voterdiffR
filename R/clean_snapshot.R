@@ -27,33 +27,34 @@
 #' Defaults to empty string.
 #' @param save_type How to export the cleaned dataframe.
 #' Defaults to Rda and fst.
-#' @param id How the snapshot files are formatted/labelled for their IDs.
-#' Defaults to mdy.
-#' @param rec Whether to find files recursively.
+#' @param format Format of the date in the snapshot file names.
+#' Defaults to "%m%d%y".
+#' @param recursive Whether to find files recursively.
 #' Defaults to FALSE.
-#' @param per Period of each snapshot---whether daily, weekly, and so on.
+#' @param period Period/interval between each snapshot---
+#' whether daily, weekly, and so on.
 #' Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 #' by argument is allowed.
-#' @param prefix File name prefix.
+#' @param file_prefix File name prefix.
 #' Defaults to Cntywd_.
 #' @param varnames All variables to be cleaned.
 #' Defaults to NULL.
-#' @param varnames_date Date variables.
+#' @param date Date variables.
 #' Defaults to NULL.
 #' @param date_order Order of the date variable, if string format.
-#' @param varnames_num Numeric variables.
+#' @param num Numeric variables.
 #' Defaults to NULL.
-#' @param varnames_first Variable containing first names.
+#' @param first Variable containing first names.
 #' Defaults to "szNameFirst".
-#' @param varname_prefix Variable containing self-reported personal prefixes.
+#' @param voter_prefix Variable containing self-reported personal prefixes.
 #' Defaults to "sVoterTitle".
-#' @param varname_gender Variable containing original gender entry.
+#' @param gender Variable containing original gender entry.
 #' Defaults to "sGender".
-#' @param varname_email Name of the email address field.
+#' @param email Name of the email address field.
 #' Defaults to "szEmailAddress".
 #' @param email_exc Emails that are to be cleaned.
 #' Defaults to a single vector of abc at example.com
-#' @param varname_phone Name of the phone number field.
+#' @param phone Name of the phone number field.
 #' Defaults to "szPhone".
 #' @param phone_exc Phone numbers that are to be cleaned.
 #' Defaults to "___-____".
@@ -73,20 +74,20 @@ clean_snapshot <- function(date_df = NULL,
                            clean_prefix = "df_cleaned_",
                            clean_suffix = "",
                            save_type = c("rda", "fst"),
-                           id = "%m%d%y",
+                           format = "%m%d%y",
                            rec = FALSE,
-                           per = 1,
-                           prefix = "Cntywd_",
+                           period = 1,
+                           file_prefix = "Cntywd_",
                            varnames = NULL,
-                           varnames_date = NULL,
+                           date = NULL,
                            date_order = "mdy",
-                           varnames_num = NULL,
-                           varnames_first = "szNameFirst",
-                           varname_prefix = "sVoterTitle",
-                           varname_gender = "sGender",
-                           varname_email = "szEmailAddress",
+                           num = NULL,
+                           first = "szNameFirst",
+                           voter_prefix = "sVoterTitle",
+                           gender = "sGender",
+                           email = "szEmailAddress",
                            email_exc = c("abc@example.com"),
-                           varname_phone = "szPhone",
+                           phone = "szPhone",
                            phone_exc = "___-____",
                            ...) {
   . <- NULL
@@ -98,9 +99,9 @@ clean_snapshot <- function(date_df = NULL,
       path = path,
       pattern = pattern,
       file_type = file_type,
-      id = id,
-      rec = rec,
-      per = per,
+      format = format,
+      recursive = recursive,
+      period = period,
       prefix = prefix
     )
   }
@@ -116,23 +117,24 @@ clean_snapshot <- function(date_df = NULL,
       clean_vars(
         df = .,
         varnames = varnames,
-        varnames_date = varnames_date,
+        date = date,
         date_order = date_order,
-        varnames_num = varnames_num,
-        firstname = varnames_first,
-        prefix = varname_prefix,
-        gender_original = varname_gender
+        num = num,
+        firstname = first,
+        prefix = prefix,
+        gender_original = gender
       ) %>%
       clean_contact(
         df = .,
-        email = varname_email,
+        email = email,
         email_exc = email_exc,
-        phone = varname_phone,
+        phone = phone,
         phone_exc = phone_exc
       )
     if ("rda" %in% tolower(save_type)) {
       save(
-        df, file = file.path(
+        df,
+        file = file.path(
           path_clean,
           paste0(clean_prefix, date_df$date_label[i], clean_suffix, ".Rda")
         )
@@ -140,12 +142,14 @@ clean_snapshot <- function(date_df = NULL,
     }
     if ("fst" %in% tolower(save_type)) {
       write.fst(
-        df, path = file.path(
+        df,
+        path = file.path(
           path_clean,
           paste0(clean_prefix, date_df$date_label[i], clean_suffix, ".fst")
         )
       )
     }
-    print(paste("Cleaning for", date_df$date_label[i], "is complete."))
+    message(paste("Cleaning for", date_df$date_label[i], "is complete."))
+    gc(reset = TRUE)
   }
 }
