@@ -115,17 +115,30 @@ clean_snapshot <- function(date_df = NULL,
         ...
       )
 
-    if (!is.null(first) & !(first %in% names(df))) {
-      stop("Wrong variable specified for first names.")
+    if (!is.null(first)) {
+      if (!(first %in% names(df))) {
+        stop("Wrong variable specified for first names.")
+      }
     }
-    if (!is.null(voter_prefix) & !(voter_prefix %in% names(df))) {
-      stop("Wrong variable specified for voter titles/prefixes.")
+    if (!is.null(voter_prefix)) {
+      if (!(voter_prefix %in% names(df))) {
+        stop("Wrong variable specified for voter titles/prefixes.")
+      }
     }
-    if (!is.null(email) & !(email %in% names(df))) {
-      stop("Wrong variable specified for emails.")
+    if (!is.null(gender)) {
+      if (!(gender %in% names(df))) {
+        stop("Wrong variable specified for exising gender variable.")
+      }
     }
-    if (!is.null(phone) & !(phone %in% names(df))) {
-      stop("Wrong variable specified for phones.")
+    if (!is.null(email)) {
+      if (!(email %in% names(df))) {
+        stop("Wrong variable specified for emails.")
+      }
+    }
+    if (!is.null(phone)) {
+      if (!(phone %in% names(df))) {
+        stop("Wrong variable specified for phones.")
+      }
     }
 
     df %>%
