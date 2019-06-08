@@ -43,14 +43,15 @@
 #' Defaults to .txt.
 #' @param file_type_cleaned File type for `clean_import()`.
 #' Defaults to .Rda.
-#' @param id How the snapshot files are formatted/labelled for their IDs.
-#' Defaults to mdy.
-#' @param rec Whether to find files recursively.
+#' @param format Format of the date in the snapshot file names.
+#' Defaults to "\%m\%d\%y".
+#' @param recursive Whether to find files recursively.
 #' Defaults to FALSE.
-#' @param per Period of each snapshot---whether daily, weekly, and so on.
+#' @param period Period/interval between each snapshot---
+#' whether daily, weekly, and so on.
 #' Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 #' by argument is allowed.
-#' @param prefix File name prefix.
+#' @param file_prefix File name file_prefix.
 #' Defaults to Cntywd_.
 #' @param path_changes Path where the extracted changes are output to.
 #' Defaults to "changes".
@@ -87,10 +88,10 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
                            pattern = "^(?=.*Cntywd_)(?!.*Hist)",
                            file_type_snapshot = ".txt",
                            file_type_cleaned = ".Rda",
-                           id = "%m%d%y",
-                           rec = FALSE,
-                           per = 1,
-                           prefix = "Cntywd_",
+                           format = "%m%d%y",
+                           recursive = FALSE,
+                           period = 1,
+                           file_prefix = "Cntywd_",
                            path_changes = "changes",
                            path_reports = "reports",
                            path_matches = "matches",
@@ -110,8 +111,9 @@ adjust_vrmatch <- function(dedup_ids = c("lVoterUniqueID", "sAffNumber"),
   if (is.null(date_df)) {
     print("Dedup all snapshot matches.")
     date_df <- snapshot_list(
-      start = start, end = end, path = path, pattern = pattern, prefix = prefix,
-      file_type = file_type_snapshot, id = id, rec = rec, per = per
+      start = start, end = end, path = path, pattern = pattern,
+      file_prefix = file_prefix, file_type = file_type_snapshot,
+      format = format, recursive = recursive, period = period
     )
   }
   final_report <- list()

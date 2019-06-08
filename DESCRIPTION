@@ -42,6 +42,7 @@ Imports:
     xtable, 
     parallel, 
     anomalize,
+    data.table,
     Kmisc
 Remotes: sysilviakim/Kmisc
 VignetteBuilder: knitr

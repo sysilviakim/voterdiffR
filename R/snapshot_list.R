@@ -20,14 +20,14 @@
 #' @param file_type File type.
 #' Defaults to .txt.
 #' @param format Format of the date in the snapshot file names.
-#' Defaults to "%m%d%y".
+#' Defaults to "\%m\%d\%y".
 #' @param recursive Whether to find files recursively.
 #' Defaults to FALSE.
 #' @param period Period/interval between each snapshot---
 #' whether daily, weekly, and so on.
 #' Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 #' by argument is allowed.
-#' @param prefix File name prefix.
+#' @param file_prefix File name file_prefix.
 #' Defaults to Cntywd_.
 #'
 #' @return A dataframe that contains available snapshots.
@@ -42,7 +42,7 @@ snapshot_list <- function(start = "2018-04-26",
                           format = "%m%d%y",
                           recursive = FALSE,
                           period = 1,
-                          prefix = "Cntywd_") {
+                          file_prefix = "Cntywd_") {
   date_label <- NULL
   date_df <-
     data.frame(
@@ -67,8 +67,8 @@ snapshot_list <- function(start = "2018-04-26",
             perl = TRUE
           )
         ],
-        nchar(prefix) + 1,
-        nchar(prefix) + nchar(format(as.Date(start), format))
+        nchar(file_prefix) + 1,
+        nchar(file_prefix) + nchar(format(as.Date(start), format))
       )
     )
   return(date_df)

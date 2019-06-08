@@ -6,7 +6,8 @@
 \usage{
 snapshot_list(start = "2018-04-26", end = "2021-01-01", path = "7z",
   pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type = ".txt",
-  id = "\%m\%d\%y", rec = FALSE, per = 1, prefix = "Cntywd_")
+  format = "\%m\%d\%y", recursive = FALSE, period = 1,
+  file_prefix = "Cntywd_")
 }
 \arguments{
 \item{start}{The start date of the first snapshot.
@@ -24,17 +25,18 @@ Defaults to a particular pattern of OCROV files.}
 \item{file_type}{File type.
 Defaults to .txt.}
 
-\item{id}{How the snapshot files are formatted/labelled for their IDs.
-Defaults to mdy.}
+\item{format}{Format of the date in the snapshot file names.
+Defaults to "\%m\%d\%y".}
 
-\item{rec}{Whether to find files recursively.
+\item{recursive}{Whether to find files recursively.
 Defaults to FALSE.}
 
-\item{per}{Period of each snapshot---whether daily, weekly, and so on.
+\item{period}{Period/interval between each snapshot---
+whether daily, weekly, and so on.
 Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 by argument is allowed.}
 
-\item{prefix}{File name prefix.
+\item{file_prefix}{File name file_prefix.
 Defaults to Cntywd_.}
 }
 \value{
