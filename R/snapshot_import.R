@@ -13,6 +13,7 @@
 #' @importFrom readr locale
 #' @importFrom readr cols
 #' @importFrom data.table setDT
+#' @importFrom data.table set
 #'
 #' @param path File path to target.
 #' Defaults to current directory.
