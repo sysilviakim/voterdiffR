@@ -8,6 +8,7 @@
 #'
 #' @importFrom dplyr "%>%"
 #' @importFrom dplyr mutate_if
+#' @importFrom dplyr as_tibble
 #' @importFrom readr read_csv
 #' @importFrom readr read_delim
 #' @importFrom readr locale
@@ -128,7 +129,7 @@ snapshot_import <- function(path = ".",
         set(df, j = j, value = trimws(df[[j]]))
       }
     }
-    df <- as.tibble(df)
+    df <- as_tibble(df)
     out[[paste0("df", toupper(ref)[which(unit == units)])]] <- df
     print(paste0("Data import for ", unit, " is finished."))
   }
