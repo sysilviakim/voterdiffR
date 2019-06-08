@@ -113,7 +113,22 @@ clean_snapshot <- function(date_df = NULL,
         units = date_df$date_label[i],
         file_type = file_type,
         ...
-      ) %>%
+      )
+
+    if (!is.null(first) & !(first %in% names(df))) {
+      stop("Wrong variable specified for first names.")
+    }
+    if (!is.null(voter_prefix) & !(voter_prefix %in% names(df))) {
+      stop("Wrong variable specified for voter titles/prefixes.")
+    }
+    if (!is.null(email) & !(email %in% names(df))) {
+      stop("Wrong variable specified for emails.")
+    }
+    if (!is.null(phone) & !(phone %in% names(df))) {
+      stop("Wrong variable specified for phones.")
+    }
+
+    df %>%
       clean_vars(
         df = .,
         varnames = varnames,
@@ -130,7 +145,7 @@ clean_snapshot <- function(date_df = NULL,
         email_exc = email_exc,
         phone = phone,
         phone_exc = phone_exc
-      )
+      ) -> df
     if ("rda" %in% tolower(save_type)) {
       save(
         df,
