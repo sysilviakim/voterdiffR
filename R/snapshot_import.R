@@ -12,6 +12,7 @@
 #' @importFrom readr read_delim
 #' @importFrom readr locale
 #' @importFrom readr cols
+#' @importFrom data.table setDT
 #'
 #' @param path File path to target.
 #' Defaults to current directory.
@@ -119,8 +120,14 @@ snapshot_import <- function(path = ".",
       )
     }
     ## Trim the whitespace
-    df <- as.data.frame(apply(df, 2, trimws)) %>%
-      mutate_if(is.factor, as.character)
+    df %>% mutate_if(is.factor, as.character) -> df
+    setDT(df)
+    for (j in names(df)) {
+      if (class(df[[j]]) == "character") {
+        set(df, j = j, value = trimws(df[[j]]))
+      }
+    }
+    df <- as.tibble(df)
     out[[paste0("df", toupper(ref)[which(unit == units)])]] <- df
     print(paste0("Data import for ", unit, " is finished."))
   }
