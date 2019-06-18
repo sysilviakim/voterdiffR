@@ -5,6 +5,8 @@
 #'
 #' @importFrom dplyr "%>%"
 #' @importFrom dplyr mutate_if
+#' @importFrom purrr map
+#' @importFrom purrr set_names
 #' @importFrom assertthat assert_that
 #'
 #' @param match List of matched output from vrmatch.
@@ -12,6 +14,8 @@
 #' Defaults to all variables.
 #' @param nrow Name of list element which will contain the number of rows
 #' of the input list dataframes.
+#' @param group Grouping variable, such as jurisdiction,
+#' to differentiate changes in variables by the group.
 #'
 #' @return List of dataframes that contain changes in each specified field.
 #'
@@ -19,12 +23,17 @@
 
 changes_extract <- function(match,
                             varnames = NULL,
-                            nrow = "nrow") {
+                            nrow = "nrow",
+                            group = NULL) {
+  . <- .x <- NULL
   if (nrow %in% varnames) {
     stop("Specify another name for nrow. Currently it is a variable name.")
   }
   if (is.null(varnames)) {
     varnames <- names(match$data$changed_A)
+  }
+  if (!(group %in% names(match$data$changed_A))) {
+    stop("The grouping variable does not exist in the data.")
   }
   out <- list()
   dfA <- bind_rows(
@@ -38,12 +47,36 @@ changes_extract <- function(match,
   ) %>%
     mutate_if(is.factor, as.character)
   assert_that(nrow(dfA) == nrow(dfB))
-  out[[nrow]] <- list(
-    exact_match = nrow(match$data$exact_match),
-    changed = nrow(dfA),
-    only_A = nrow(match$data$only_A),
-    only_B = nrow(match$data$only_B)
-  )
+
+  if (is.null(group)) {
+    out[[nrow]] <- list(
+      exact_match = nrow(match$data$exact_match),
+      changed = nrow(dfA),
+      only_A = nrow(match$data$only_A),
+      only_B = nrow(match$data$only_B)
+    )
+  } else {
+    group_labels <- unique((match$data %>% bind_rows())[[group]])
+    out[[nrow]] <- group_labels %>%
+      set_names(., .) %>%
+      map(
+        ~ list(
+          exact_match = nrow(
+            match$data$exact_match %>% filter(!!as.name(group) == .x)
+          ),
+          changed = nrow(
+            dfA %>% filter(!!as.name(group) == .x)
+          ),
+          only_A = nrow(
+            match$data$only_A %>% filter(!!as.name(group) == .x)
+          ),
+          only_B = nrow(
+            match$data$only_B %>% filter(!!as.name(group) == .x)
+          )
+        )
+      )
+  }
+
   for (v in varnames) {
     out[[paste(v, "A", sep = "_")]] <- dfA[dfA[[v]] != dfB[[v]], ]
     out[[paste(v, "B", sep = "_")]] <- dfB[dfA[[v]] != dfB[[v]], ]

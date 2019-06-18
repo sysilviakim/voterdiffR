@@ -4,7 +4,7 @@
 \alias{changes_extract}
 \title{Changes by Field}
 \usage{
-changes_extract(match, varnames = NULL, nrow = "nrow")
+changes_extract(match, varnames = NULL, nrow = "nrow", group = NULL)
 }
 \arguments{
 \item{match}{List of matched output from vrmatch.}
@@ -14,6 +14,9 @@ Defaults to all variables.}
 
 \item{nrow}{Name of list element which will contain the number of rows
 of the input list dataframes.}
+
+\item{group}{Grouping variable, such as jurisdiction,
+to differentiate changes in variables by the group.}
 }
 \value{
 List of dataframes that contain changes in each specified field.

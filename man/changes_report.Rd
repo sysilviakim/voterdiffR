@@ -4,7 +4,7 @@
 \alias{changes_report}
 \title{Report Changes Between Snapshots}
 \usage{
-changes_report(changes, varnames = NULL, nrow = "nrow")
+changes_report(changes, varnames = NULL, nrow = "nrow", group = NULL)
 }
 \arguments{
 \item{changes}{Named list outputed from change_extract.}
@@ -14,6 +14,9 @@ Defaults to NULL.}
 
 \item{nrow}{Name of list element which will contain the number of rows
 of the input list dataframes.}
+
+\item{group}{Grouping variable, such as jurisdiction,
+to differentiate changes in variables by the group.}
 }
 \value{
 Dataframe with changes' summary statistics.
