@@ -78,6 +78,8 @@
 #' @param nrow Name of list element which will contain the number of rows
 #' of the input list dataframes.
 #' @param seed Seed to set. Defaults to 123.
+#' @param group Grouping variable, such as jurisdiction,
+#' to differentiate changes in variables by the group.
 #' @param ... Other parameters for fastLink.
 #'
 #' @return A nested list of matched dataframes, fastLink output, and arguments.
@@ -110,7 +112,9 @@ vrmatch <- function(date_df,
                     date_label = "date_label",
                     nrow = "nrow",
                     seed = 123,
+                    group = NULL,
                     ...) {
+  .x <- NULL
   set.seed(seed)
   if (!is.null(varnames_str) &
     sum(!(varnames_str %in% varnames)) != 0) {
@@ -166,11 +170,11 @@ vrmatch <- function(date_df,
       if (
         !is.null(varnames_id) &
           ((varnames_id %>%
-            map(sum(duplicated(orig[[1]][[.x]]))) %>%
+            map(~ sum(duplicated(orig[[1]][[.x]]))) %>%
             unlist() %>%
             sum() > 0) |
             (varnames_id %>%
-              map(sum(duplicated(orig[[2]][[.x]]))) %>%
+              map(~ sum(duplicated(orig[[2]][[.x]]))) %>%
               unlist() %>%
               sum() > 0))
       ) {
@@ -244,7 +248,9 @@ vrmatch <- function(date_df,
       )
     }
     ## Track changes and summarize them.
-    changes <- changes_extract(match, varnames = vars_change, nrow = nrow)
+    changes <- changes_extract(
+      match, varnames = vars_change, nrow = nrow, group = group
+    )
     message("Changes are extracted.")
     save(
       changes,
@@ -252,7 +258,9 @@ vrmatch <- function(date_df,
         path_changes, paste0("change_", day1, "_", day2, ".Rda")
       )
     )
-    report <- changes_report(changes, vars_change, nrow = nrow)
+    report <- changes_report(
+      changes, vars_change, nrow = nrow, group = group
+    )
     message(paste0("Change summaries for ", day1, " and ", day2, ":"))
     message(report)
     save(

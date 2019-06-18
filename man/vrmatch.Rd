@@ -12,7 +12,8 @@ vrmatch(date_df, exact_exclude = TRUE, sample_exact = FALSE,
   exist_files = FALSE, varnames, varnames_str, varnames_num = NULL,
   varnames_id = NULL, partial.match = NULL, varnames_block = NULL,
   vars_change = NULL, n.cores = NULL, file_type = ".Rda",
-  date_label = "date_label", nrow = "nrow", seed = 123, ...)
+  date_label = "date_label", nrow = "nrow", seed = 123,
+  group = NULL, ...)
 }
 \arguments{
 \item{date_df}{Dataframe of list of snapshots.}
@@ -92,6 +93,9 @@ Defaults to "date_label".}
 of the input list dataframes.}
 
 \item{seed}{Seed to set. Defaults to 123.}
+
+\item{group}{Grouping variable, such as jurisdiction,
+to differentiate changes in variables by the group.}
 
 \item{...}{Other parameters for fastLink.}
 }
