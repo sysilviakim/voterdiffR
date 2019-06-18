@@ -113,11 +113,11 @@ vrmatch <- function(date_df,
                     ...) {
   set.seed(seed)
   if (!is.null(varnames_str) &
-      sum(!(varnames_str %in% varnames)) != 0) {
+    sum(!(varnames_str %in% varnames)) != 0) {
     stop("String variables list is not a subset of the variable list.")
   }
   if (!is.null(partial.match) &
-      sum(!(partial.match %in% varnames_str)) != 0) {
+    sum(!(partial.match %in% varnames_str)) != 0) {
     stop("Partial match list is not a subset of the string variables list.")
   }
   if (is.null(partial.match)) {
@@ -143,18 +143,40 @@ vrmatch <- function(date_df,
     day2 <- date_df[[date_label]][i + 1]
     if (
       exist_files == TRUE &
-      file.exists(file.path(
-        path_matches, paste0("match_", day1, "_", day2, ".Rda")
-      ))
+        file.exists(file.path(
+          path_matches, paste0("match_", day1, "_", day2, ".Rda")
+        ))
     ) {
       ## If there is already a match output, load it
       load(file.path(path_matches, paste0("match_", day1, "_", day2, ".Rda")))
-      print(paste0("Matched dataframes loaded for ", day1, " and ", day2, "."))
+      message(
+        paste0("Matched dataframes loaded for ", day1, " and ", day2, ".")
+      )
     } else {
       ## If this is a new match to be, load the cleaned dataframes.
       orig <- clean_import(
         path_clean, clean_prefix, clean_suffix, day1, day2, file_type
       )
+
+      if (sum(duplicated(orig[[1]])) > 0 | sum(duplicated(orig[[2]])) > 0) {
+        message("There are exact duplicates in the file.")
+        stop("Please check the data generating process.")
+      }
+
+      if (
+        !is.null(varnames_id) &
+          ((varnames_id %>%
+            map(sum(duplicated(orig[[1]][[.x]]))) %>%
+            unlist() %>%
+            sum() > 0) |
+            (varnames_id %>%
+              map(sum(duplicated(orig[[2]][[.x]]))) %>%
+              unlist() %>%
+              sum() > 0))
+      ) {
+        message("There are exact duplicates in ID variable in the file.")
+        stop("Please check the data generating process.")
+      }
 
       ## (1) Perform full exact matching if requested to exclude them from PRL.
       ##     This is to lessen the computational load.
@@ -165,8 +187,8 @@ vrmatch <- function(date_df,
       ##     This is also to lessen the computational load.
       inter <- id_match(inter, ids = varnames_id)
       assert_inter(inter, orig)
-      print("The interim list has the following number of rows: ")
-      print(unlist(lapply(inter, nrow)))
+      message("The interim list has the following number of rows: ")
+      message(unlist(lapply(inter, nrow)))
 
       ## (3) Add back a random sample of the excluded portions to approximate
       ##     the true distribution of each field, if requested.
@@ -197,10 +219,10 @@ vrmatch <- function(date_df,
         }, error = function(e) {
           message(paste0(e, "\n"))
         })
-        print("fastLink running is complete.")
+        message("fastLink running is complete.")
         match <- match_out(inter, f.out, f.in)
       } else {
-        print("There are too few obs. in records to match. Abort matching.")
+        message("There are too few obs. in records to match. Abort matching.")
         match <- match_none(inter)
       }
       assert_match(match, orig)
@@ -223,7 +245,7 @@ vrmatch <- function(date_df,
     }
     ## Track changes and summarize them.
     changes <- changes_extract(match, varnames = vars_change, nrow = nrow)
-    print("Changes are extracted.")
+    message("Changes are extracted.")
     save(
       changes,
       file = file.path(
@@ -231,8 +253,8 @@ vrmatch <- function(date_df,
       )
     )
     report <- changes_report(changes, vars_change, nrow = nrow)
-    print(paste0("Change summaries for ", day1, " and ", day2, ":"))
-    print(report)
+    message(paste0("Change summaries for ", day1, " and ", day2, ":"))
+    message(report)
     save(
       report,
       file = file.path(
@@ -280,7 +302,7 @@ clean_import <- function(path_clean,
   orig[["dfB"]] <- df %>%
     mutate_if(is.Date, as.numeric) %>%
     mutate_if(is.POSIXt, function(x) as.numeric(as.Date(x)))
-  print(paste0("Cleaned dataframes loaded for ", day1, " and ", day2, "."))
+  message(paste0("Cleaned dataframes loaded for ", day1, " and ", day2, "."))
   return(orig)
 }
 
@@ -317,9 +339,9 @@ match_out <- function(inter, f.out, f.in) {
   } else {
     if (nrow(f.in$fA) == nrow(inter$mismatch_A)) {
       match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a, ]
-      match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a, ]
+      match$data$only_A <- match$data$mismatch_A[-f.out$matches$inds.a, ]
       match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b, ]
-      match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b, ]
+      match$data$only_B <- match$data$mismatch_B[-f.out$matches$inds.b, ]
     } else {
       x <- which(
         (f.out$matches$inds.a <= nrow(inter$mismatch_A)) &
@@ -327,10 +349,14 @@ match_out <- function(inter, f.out, f.in) {
       )
       if (length(x) > 0) {
         ## Because mismatches were first arguments in bind_row in random_sample
-        match$data$changed_A <- match$data$mismatch_A[f.out$matches$inds.a[x], ]
-        match$data$only_A    <- match$data$mismatch_A[-f.out$matches$inds.a[x], ]
-        match$data$changed_B <- match$data$mismatch_B[f.out$matches$inds.b[x], ]
-        match$data$only_B    <- match$data$mismatch_B[-f.out$matches$inds.b[x], ]
+        match$data$changed_A <-
+          match$data$mismatch_A[f.out$matches$inds.a[x], ]
+        match$data$only_A <-
+          match$data$mismatch_A[-f.out$matches$inds.a[x], ]
+        match$data$changed_B <-
+          match$data$mismatch_B[f.out$matches$inds.b[x], ]
+        match$data$only_B <-
+          match$data$mismatch_B[-f.out$matches$inds.b[x], ]
       } else {
         ## Because mismatches were first arguments in bind_row in random_sample
         match <- match_none(inter)
@@ -360,28 +386,28 @@ random_sample <- function(inter, sample_exact, sample_id, exact_exclude,
   if (
     ## (1) All-inclusive random sampling
     sample_exact == TRUE & exact_exclude == TRUE &
-    sample_id == TRUE & !is.null(varnames_id)
+      sample_id == TRUE & !is.null(varnames_id)
   ) {
-    print("Adding random sample back to PRL from exact/ID matches.")
+    message("Adding random sample back to PRL from exact/ID matches.")
     popA <- bind_rows(inter$exact_match, inter$id_match_A)
     popB <- bind_rows(inter$exact_match, inter$id_match_B)
   } else if (
     ## (2) Only random sample from exact matches
     sample_exact == TRUE & exact_exclude == TRUE &
-    !(sample_id == TRUE & !is.null(varnames_id))
+      !(sample_id == TRUE & !is.null(varnames_id))
   ) {
-    print("Adding random sample back to PRL from exact matches only.")
+    message("Adding random sample back to PRL from exact matches only.")
     popA <- popB <- inter$exact_match
   } else if (
     ## (3) Only random sample from non-exact sID matches
     !(sample_exact == TRUE & exact_exclude == TRUE) &
-    sample_id == TRUE & !is.null(varnames_id)
+      sample_id == TRUE & !is.null(varnames_id)
   ) {
-    print("Adding random sample back to PRL from ID matches only.")
+    message("Adding random sample back to PRL from ID matches only.")
     popA <- inter$id_match_A
     popB <- inter$id_match_B
   } else {
-    print("No random samples added.")
+    message("No random samples added.")
   }
   ## If popA and popB are empty dataframes, no rows will be chosen.
   if (is.null(sample_size)) {
