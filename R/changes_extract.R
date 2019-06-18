@@ -32,8 +32,10 @@ changes_extract <- function(match,
   if (is.null(varnames)) {
     varnames <- names(match$data$changed_A)
   }
-  if (!(group %in% names(match$data$changed_A))) {
-    stop("The grouping variable does not exist in the data.")
+  if (!is.null(group)) {
+    if (!(group %in% names(match$data$changed_A))) {
+      stop("The grouping variable does not exist in the data.")
+    }
   }
   out <- list()
   dfA <- bind_rows(
