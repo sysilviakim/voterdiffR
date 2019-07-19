@@ -95,32 +95,18 @@ snapshot_import <- function(path = ".",
     } else if (length(file_path) == 0) {
       stop("There are no files with the given prefix/suffix/unit.")
     }
-    if (file_type == ".csv") {
-      df <- read_csv(
-        file = file_path,
-        col_names = col_names,
-        col_types = col_classes,
-        n_max = n_max,
-        locale = locale(encoding = enc),
-        ...
-        ## Default encoding is ISO-8859-1, otherwise
-        ## error in guess_header_(datasource, tokenizer, locale) for some names
-        ## e.g. Labb\xe9.
-      )
-    } else if (file_type == ".txt") {
-      df <- read_delim(
-        file = file_path,
-        delim = del,
-        col_names = col_names,
-        col_types = col_classes,
-        trim_ws = TRUE,
-        quote = quote,
-        locale = locale(encoding = enc),
-        na = na,
-        n_max = n_max,
-        ...
-      )
-    }
+    df <- read_delim(
+      file = file_path,
+      delim = del,
+      col_names = col_names,
+      col_types = col_classes,
+      trim_ws = TRUE,
+      quote = quote,
+      locale = locale(encoding = enc),
+      na = na,
+      n_max = n_max,
+      ...
+    )
     ## Trim the whitespace
     df %>% mutate_if(is.factor, as.character) -> df
     setDT(df)
