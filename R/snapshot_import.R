@@ -8,17 +8,20 @@
 #'
 #' @importFrom dplyr "%>%"
 #' @importFrom dplyr mutate_if
+#' @importFrom dplyr as_tibble
 #' @importFrom readr read_csv
 #' @importFrom readr read_delim
 #' @importFrom readr locale
 #' @importFrom readr cols
+#' @importFrom data.table setDT
+#' @importFrom data.table set
 #'
 #' @param path File path to target.
 #' Defaults to current directory.
-#' @param prefix File name prefix.
+#' @param file_prefix File name prefix.
 #' Defaults to empty string.
 #' @param units Snapshot ID e.g. 20180426.
-#' @param suffix File name suffix.
+#' @param file_suffix File name suffix.
 #' Defaults to empty string.
 #' @param file_type Input file type. Currently takes in .txt and .csv.
 #' Defaults to .txt.
@@ -44,9 +47,9 @@
 #' @export
 
 snapshot_import <- function(path = ".",
-                            prefix = "",
+                            file_prefix = "",
                             units,
-                            suffix = "",
+                            file_suffix = "",
                             file_type = ".txt",
                             col_classes = NULL,
                             n_max = Inf,
@@ -73,40 +76,46 @@ snapshot_import <- function(path = ".",
     ref <- letters
   } else if (
     (is.null(ref) & length(units) > 26) |
-    length(units) > length(ref)
+      length(units) > length(ref)
   ) {
     stop("Supply the function with longer generic references.")
   }
   for (unit in units) {
     print(paste0("Data import for ", unit, " will be executed."))
-    if (file_type == ".csv") {
-      df <- read_csv(
-        file = file.path(path, paste0(prefix, unit, file_type)),
-        col_types = col_classes,
-        n_max = n_max,
-        locale = locale(encoding = enc),
-        ...
-        ## Default encoding is ISO-8859-1, otherwise
-        ## error in guess_header_(datasource, tokenizer, locale) for some names
-        ## e.g. Labb\xe9.
+    file_path <- list.files(
+      path,
+      full.names = TRUE,
+      pattern = paste0(
+        "^", file_prefix, ".*", unit, ".*",
+        file_suffix, ".*", file_type, "$"
       )
-    } else if (file_type == ".txt") {
-      df <- read_delim(
-        file = file.path(path, paste0(prefix, unit, file_type)),
-        delim = del,
-        col_names = col_names,
-        col_types = col_classes,
-        trim_ws = TRUE,
-        quote = quote,
-        locale = locale(encoding = enc),
-        na = na,
-        n_max = n_max,
-        ...
-      )
+    )
+    if (length(file_path) > 1) {
+      stop("There are multiple files with the given prefix/suffix/unit.")
+    } else if (length(file_path) == 0) {
+      stop("There are no files with the given prefix/suffix/unit.")
     }
+    df <- read_delim(
+      file = file_path,
+      delim = del,
+      col_names = col_names,
+      col_types = col_classes,
+      trim_ws = TRUE,
+      quote = quote,
+      locale = locale(encoding = enc),
+      na = na,
+      n_max = n_max,
+      ...
+    )
     ## Trim the whitespace
-    df <- as.data.frame(apply(df, 2, trimws)) %>%
-      dplyr::mutate_if(is.factor, as.character)
+    df %>% mutate_if(is.factor, as.character) -> df
+    setDT(df)
+    for (j in names(df)) {
+      if (class(df[[j]]) == "character") {
+        set(df, j = j, value = trimws(df[[j]]))
+      }
+    }
+    df <- as_tibble(df)
     out[[paste0("df", toupper(ref)[which(unit == units)])]] <- df
     print(paste0("Data import for ", unit, " is finished."))
   }
@@ -116,5 +125,3 @@ snapshot_import <- function(path = ".",
     return(out)
   }
 }
-
-
