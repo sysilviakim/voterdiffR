@@ -15,7 +15,7 @@ The administration of elections depends crucially upon the quality and integrity
 devtools::install_github("sysilviakim/voterdiffR")
 ```
 
-We use CRAN package `fastLink` for record linkage. For more information, visit https://github.com/kosukeimai/fastLink. 
+We use CRAN package `fastLink` for probabilistic record linkage. For more information on how it operates, visit https://github.com/kosukeimai/fastLink. 
 
 ## Example
 
@@ -27,44 +27,70 @@ We use CRAN package `fastLink` for record linkage. For more information, visit h
 
 Although the data itself cannot be released to the public for privacy concerns, the following is the series of the code using this package that we run, excluding figures/tables creation and performance assessment.
 
+--------------------------------------------
+
+### Setup 
+
+The following is the minimal setup necessary for the application.
+
 ```
-## Setup
 library(voterdiffR)
 options(digits = 4, scipen = 999)
 
-non_addr <- c("szNameLast", "szNameMiddle", "szNameFirst", "sNameSuffix")
-addr <- c("sHouseNum", "szStreetName", "sUnitNum", 
-          "szSitusCity", "sSitusZip", "szSitusAddress")
-vars_date <- c("dtBirthDate", "dtRegDate", "dtOrigRegDate", "dtLastUpdate_dt")
-vars_num <- c("sHouseNum", "sSitusZip")
-num_match <- c(vars_num, vars_date)
-vars_all <- unique(c(non_addr, addr, vars_date))
-vars_id <- c("lVoterUniqueID", "sAffNumber")
+vl <- list(
+  name = c("szNameLast", "szNameMiddle", "szNameFirst", "sNameSuffix"),
+  addr1 = c("sHouseNum", "szStreetName", "sUnitNum"),
+  addr2 = c("szSitusAddress", "szSitusCity", "sSitusZip"),
+  date = c("dtBirthDate", "dtRegDate", "dtOrigRegDate", "dtLastUpdate_dt"),
+  num = c("sHouseNum", "sSitusZip"),
+  id = c("lVoterUniqueID", "sAffNumber"),
+  mat = c("szNameLast", "szNameFirst", "dtBirthDate", "sHouseNum", "sSitusZip")
+)
+vl$all <- Reduce(union, vl[1:4])
+```
 
-## Clean
+--------------------------------------------
+
+### Clean 
+
+First, we clean all dataframes to be used.
+
+```
 date_df <- snapshot_list()
 data(oc_colclasses)
 clean_snapshot(
-  date_df = date_df, col_classes = oc_colclasses, 
-  varnames = vars_all, varnames_date = vars_date, varnames_num = vars_num
+  date_df = date_df,
+  col_classes = oc_colclasses,
+  varnames = vl$all,
+  date = vl$date,
+  num = vl$num
 )
+```
 
-## Match
-non_addr <- c("szNameLast", "szNameFirst", "dtBirthDate")
-addr <- c("sHouseNum", "sSitusZip")
-vars_all <- c(non_addr, addr)
+--------------------------------------------
 
-output <- vrmatch(
-  date_df, varnames = vars_all, varnames_str = setdiff(vars_all, vars_num),
-  varnames_num = vars_num, file_type = ".fst",
-  vars_change = c(
-    non_addr, vars_id[1], "szSitusAddress", "szMailAddress1", "szPartyName"
-  )
-)
+### Match
 
-## Anomaly Detection
-
-## Duplicate Detection
-
+We generate the audit trail by matching periodic voter snapshots. 
 
 ```
+report <- vrmatch(
+  date_df,
+  varnames = vl$mat,
+  varnames_str = setdiff(vl$mat, union(vl$num, vl$date)),
+  varnames_num = intersect(vl$mat, union(vl$num, vl$date)),
+  file_type = ".fst",
+  vars_change = c(vl$mat[1:3], vl$addr2[1], vl$id[1], "szPartyName"),
+  exist_files = TRUE
+)
+```
+
+--------------------------------------------
+
+### Anomaly Detection
+
+--------------------------------------------
+
+### Duplicate Detection
+
+

@@ -19,14 +19,15 @@
 #' Defaults to a particular pattern of OCROV files.
 #' @param file_type File type.
 #' Defaults to .txt.
-#' @param id How the snapshot files are formatted/labelled for their IDs.
-#' Defaults to mdy.
-#' @param rec Whether to find files recursively.
+#' @param format Format of the date in the snapshot file names.
+#' Defaults to "\%m\%d\%y".
+#' @param recursive Whether to find files recursively.
 #' Defaults to FALSE.
-#' @param per Period of each snapshot---whether daily, weekly, and so on.
+#' @param period Period/interval between each snapshot---
+#' whether daily, weekly, and so on.
 #' Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 #' by argument is allowed.
-#' @param prefix File name prefix.
+#' @param file_prefix File name file_prefix.
 #' Defaults to Cntywd_.
 #'
 #' @return A dataframe that contains available snapshots.
@@ -38,30 +39,36 @@ snapshot_list <- function(start = "2018-04-26",
                           path = "7z",
                           pattern = "^(?=.*Cntywd_)(?!.*Hist)",
                           file_type = ".txt",
-                          id = "%m%d%y",
-                          rec = FALSE,
-                          per = 1,
-                          prefix = "Cntywd_") {
+                          format = "%m%d%y",
+                          recursive = FALSE,
+                          period = 1,
+                          file_prefix = "Cntywd_") {
   date_label <- NULL
   date_df <-
     data.frame(
-      date = seq(as.Date(start), as.Date(end), by = per)
+      date = seq(as.Date(start), as.Date(end), by = period)
     ) %>%
     mutate(
       weekday = wday(date, label = TRUE),
-      date_label = format(date, id)
+      date_label = format(date, format)
     ) %>%
     filter(
       date_label %in% substr(
-        list.files(file.path(path), pattern = file_type, recursive = rec)[
+        list.files(
+          file.path(path),
+          pattern = file_type, recursive = recursive
+        )[
           grepl(
-            list.files(file.path(path), pattern = file_type, recursive = rec),
+            list.files(
+              file.path(path),
+              pattern = file_type, recursive = recursive
+            ),
             pattern = pattern,
             perl = TRUE
           )
         ],
-        nchar(prefix) + 1,
-        nchar(prefix) + nchar(format(as.Date(start), id))
+        nchar(file_prefix) + 1,
+        nchar(file_prefix) + nchar(format(as.Date(start), format))
       )
     )
   return(date_df)

@@ -8,13 +8,13 @@ clean_snapshot(date_df = NULL, start = "2018-04-26",
   end = "2021-01-01", path = "7z",
   pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type = ".txt",
   path_clean = "clean_df", clean_prefix = "df_cleaned_",
-  clean_suffix = "", save_type = c("rda", "fst"), id = "\%m\%d\%y",
-  rec = FALSE, per = 1, prefix = "Cntywd_", varnames = NULL,
-  varnames_date = NULL, date_order = "mdy", varnames_num = NULL,
-  varnames_first = "szNameFirst", varname_prefix = "sVoterTitle",
-  varname_gender = "sGender", varname_email = "szEmailAddress",
-  email_exc = c("abc@example.com"), varname_phone = "szPhone",
-  phone_exc = "___-____", ...)
+  clean_suffix = "", save_type = c("rda", "fst"),
+  format = "\%m\%d\%y", recursive = FALSE, period = 1,
+  file_prefix = "Cntywd_", varnames = NULL, date = NULL,
+  date_order = "mdy", num = NULL, first = "szNameFirst",
+  voter_prefix = "sVoterTitle", gender = "sGender",
+  email = "szEmailAddress", email_exc = c("abc@example.com"),
+  phone = "szPhone", phone_exc = "___-____", ...)
 }
 \arguments{
 \item{date_df}{List of snapshots. Defaults to NULL,
@@ -47,46 +47,47 @@ Defaults to empty string.}
 \item{save_type}{How to export the cleaned dataframe.
 Defaults to Rda and fst.}
 
-\item{id}{How the snapshot files are formatted/labelled for their IDs.
-Defaults to mdy.}
+\item{format}{Format of the date in the snapshot file names.
+Defaults to "\%m\%d\%y".}
 
-\item{rec}{Whether to find files recursively.
+\item{recursive}{Whether to find files recursively.
 Defaults to FALSE.}
 
-\item{per}{Period of each snapshot---whether daily, weekly, and so on.
+\item{period}{Period/interval between each snapshot---
+whether daily, weekly, and so on.
 Defaults to 1 (equivalent to "day"). Any valid input for base seq.Date
 by argument is allowed.}
 
-\item{prefix}{File name prefix.
+\item{file_prefix}{File name prefix.
 Defaults to Cntywd_.}
 
 \item{varnames}{All variables to be cleaned.
 Defaults to NULL.}
 
-\item{varnames_date}{Date variables.
+\item{date}{Date variables.
 Defaults to NULL.}
 
 \item{date_order}{Order of the date variable, if string format.}
 
-\item{varnames_num}{Numeric variables.
+\item{num}{Numeric variables.
 Defaults to NULL.}
 
-\item{varnames_first}{Variable containing first names.
+\item{first}{Variable containing first names.
 Defaults to "szNameFirst".}
 
-\item{varname_prefix}{Variable containing self-reported personal prefixes.
+\item{voter_prefix}{Variable containing self-reported personal prefixes.
 Defaults to "sVoterTitle".}
 
-\item{varname_gender}{Variable containing original gender entry.
+\item{gender}{Variable containing original gender entry.
 Defaults to "sGender".}
 
-\item{varname_email}{Name of the email address field.
+\item{email}{Name of the email address field.
 Defaults to "szEmailAddress".}
 
 \item{email_exc}{Emails that are to be cleaned.
 Defaults to a single vector of abc at example.com}
 
-\item{varname_phone}{Name of the phone number field.
+\item{phone}{Name of the phone number field.
 Defaults to "szPhone".}
 
 \item{phone_exc}{Phone numbers that are to be cleaned.
