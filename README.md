@@ -21,8 +21,8 @@ We use CRAN package `fastLink` for probabilistic record linkage. For more inform
 
 ## OCROV application
 
-Although the data itself cannot be released to the public for privacy concerns, the code used to generate the results of the paper is available on the project repository at [monitoringtheelection/auditingVR](https://github.com/monitoringtheelection/auditingVR). 
+Although the raw voter files cannot be released to the public for privacy concerns, the code used to generate the results of the paper is available on the project repository at [monitoringtheelection/auditingVR](https://github.com/monitoringtheelection/auditingVR), as well as the intermediate outputs such as the audit data. 
 
-Please stay tuned for examples, vignettes, and detailed instructions on the usage! I welcome issues and pull requests.
+Please stay tuned for examples, vignettes, and detailed instructions on the usage! I welcome issues and pull requests. Eventually, I will be submitting this to CRAN as well.
 
 
