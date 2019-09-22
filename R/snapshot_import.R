@@ -15,6 +15,7 @@
 #' @importFrom readr cols
 #' @importFrom data.table setDT
 #' @importFrom data.table set
+#' @importFrom utils read.delim
 #'
 #' @param path File path to target.
 #' Defaults to current directory.
