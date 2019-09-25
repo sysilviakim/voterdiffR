@@ -15,6 +15,7 @@
 #' @importFrom readr cols
 #' @importFrom data.table setDT
 #' @importFrom data.table set
+#' @importFrom utils read.delim
 #'
 #' @param path File path to target.
 #' Defaults to current directory.
@@ -38,6 +39,8 @@
 #' Defaults to empty string.
 #' @param ref Reference for snapshot imports when more than two are imported.
 #' Defaults to English lowercase alphabets.
+#' @param package Delimited file reading package. Defaults to `readr` read_delim
+#' but can be `base` read.delim.
 #' @param ... Other arguments to be passed to
 #' readr::read:csv or readr::read_delim
 #'
@@ -59,6 +62,7 @@ snapshot_import <- function(path = ".",
                             col_names = TRUE,
                             na = "",
                             ref = NULL,
+                            package = "readr",
                             ...) {
   out <- list()
   if (!(file_type %in% c(".csv", ".txt"))) {
@@ -67,8 +71,11 @@ snapshot_import <- function(path = ".",
   if (length(units) == 0) {
     stop("The snapshot to be imported must be specified.")
   }
-  if (is.null(col_classes)) {
+  if (is.null(col_classes) & package == "readr") {
     col_classes <- cols(.default = "c")
+  }
+  if (is.null(col_classes) & package == "base") {
+    col_classes <- "character"
   }
   if (is.null(ref) & length(units) <= 26) {
     ## Lowercase alphabets.
@@ -95,18 +102,35 @@ snapshot_import <- function(path = ".",
     } else if (length(file_path) == 0) {
       stop("There are no files with the given prefix/suffix/unit.")
     }
-    df <- read_delim(
-      file = file_path,
-      delim = del,
-      col_names = col_names,
-      col_types = col_classes,
-      trim_ws = TRUE,
-      quote = quote,
-      locale = locale(encoding = enc),
-      na = na,
-      n_max = n_max,
-      ...
-    )
+    if (package == "readr") {
+      df <- read_delim(
+        file = file_path,
+        delim = del,
+        col_names = col_names,
+        col_types = col_classes,
+        trim_ws = TRUE,
+        quote = quote,
+        locale = locale(encoding = enc),
+        na = na,
+        n_max = n_max,
+        ...
+      )
+    } else if (package == "base") {
+      df <- read.delim(
+        file = file_path,
+        header = FALSE,
+        sep = del,
+        quote = quote,
+        fileEncoding = enc,
+        skipNul = TRUE,
+        col.names = col_names,
+        colClasses = col_classes,
+        comment.char = "",
+        stringsAsFactors = FALSE,
+        na.strings = na,
+        fill = TRUE
+      )
+    }
     ## Trim the whitespace
     df %>% mutate_if(is.factor, as.character) -> df
     setDT(df)

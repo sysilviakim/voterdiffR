@@ -7,7 +7,7 @@
 snapshot_import(path = ".", file_prefix = "", units,
   file_suffix = "", file_type = ".txt", col_classes = NULL,
   n_max = Inf, enc = "ISO-8859-1", del = "\\t", quote = "",
-  col_names = TRUE, na = "", ref = NULL, ...)
+  col_names = TRUE, na = "", ref = NULL, package = "readr", ...)
 }
 \arguments{
 \item{path}{File path to target.
@@ -44,6 +44,9 @@ Defaults to empty string.}
 
 \item{ref}{Reference for snapshot imports when more than two are imported.
 Defaults to English lowercase alphabets.}
+
+\item{package}{Delimited file reading package. Defaults to `readr` read_delim
+but can be `base` read.delim.}
 
 \item{...}{Other arguments to be passed to
 readr::read:csv or readr::read_delim}
