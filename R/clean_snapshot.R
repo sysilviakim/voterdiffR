@@ -4,8 +4,8 @@
 #' export them into Rda and/or fst objects for future calls by vrmatch function.
 #'
 #' @importFrom dplyr "%>%"
-#' @importFrom Kmisc clean_vars
 #' @importFrom fst write.fst
+#' @importFrom Kmisc clean_vars
 #'
 #' @param date_df List of snapshots. Defaults to NULL,
 #' in which case the function will detect all snapshots available.
@@ -92,7 +92,7 @@ clean_snapshot <- function(date_df = NULL,
                            ...) {
   . <- NULL
   if (is.null(date_df)) {
-    print("Clean all snapshots.")
+    message("Clean all snapshots.")
     date_df <- snapshot_list(
       start = start,
       end = end,
@@ -115,17 +115,25 @@ clean_snapshot <- function(date_df = NULL,
         ...
       )
 
-    if (!is.null(first) & !(first %in% names(df))) {
-      stop("Wrong variable specified for first names.")
+    if (!is.null(first)) {
+      if (!(first %in% names(df))) {
+        stop("Wrong variable specified for first names.")
+      }
     }
-    if (!is.null(voter_prefix) & !(voter_prefix %in% names(df))) {
-      stop("Wrong variable specified for voter titles/prefixes.")
+    if (!is.null(voter_prefix)) {
+      if (!(voter_prefix %in% names(df))) {
+        stop("Wrong variable specified for voter titles/prefixes.")
+      }
     }
-    if (!is.null(email) & !(email %in% names(df))) {
-      stop("Wrong variable specified for emails.")
+    if (!is.null(email)) {
+      if (!(email %in% names(df))) {
+        stop("Wrong variable specified for emails.")
+      }
     }
-    if (!is.null(phone) & !(phone %in% names(df))) {
-      stop("Wrong variable specified for phones.")
+    if (!is.null(phone)) {
+      if (!(phone %in% names(df))) {
+        stop("Wrong variable specified for phones.")
+      }
     }
 
     df %>%

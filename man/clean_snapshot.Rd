@@ -4,17 +4,34 @@
 \alias{clean_snapshot}
 \title{Clean Snapshots and Store Them}
 \usage{
-clean_snapshot(date_df = NULL, start = "2018-04-26",
-  end = "2021-01-01", path = "7z",
-  pattern = "^(?=.*Cntywd_)(?!.*Hist)", file_type = ".txt",
-  path_clean = "clean_df", clean_prefix = "df_cleaned_",
-  clean_suffix = "", save_type = c("rda", "fst"),
-  format = "\%m\%d\%y", recursive = FALSE, period = 1,
-  file_prefix = "Cntywd_", varnames = NULL, date = NULL,
-  date_order = "mdy", num = NULL, first = "szNameFirst",
-  voter_prefix = "sVoterTitle", gender = "sGender",
-  email = "szEmailAddress", email_exc = c("abc@example.com"),
-  phone = "szPhone", phone_exc = "___-____", ...)
+clean_snapshot(
+  date_df = NULL,
+  start = "2018-04-26",
+  end = "2021-01-01",
+  path = "7z",
+  pattern = "^(?=.*Cntywd_)(?!.*Hist)",
+  file_type = ".txt",
+  path_clean = "clean_df",
+  clean_prefix = "df_cleaned_",
+  clean_suffix = "",
+  save_type = c("rda", "fst"),
+  format = "\%m\%d\%y",
+  recursive = FALSE,
+  period = 1,
+  file_prefix = "Cntywd_",
+  varnames = NULL,
+  date = NULL,
+  date_order = "mdy",
+  num = NULL,
+  first = "szNameFirst",
+  voter_prefix = "sVoterTitle",
+  gender = "sGender",
+  email = "szEmailAddress",
+  email_exc = c("abc@example.com"),
+  phone = "szPhone",
+  phone_exc = "___-____",
+  ...
+)
 }
 \arguments{
 \item{date_df}{List of snapshots. Defaults to NULL,
