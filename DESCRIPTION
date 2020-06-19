@@ -3,12 +3,15 @@ Type: Package
 Title: Evaluating the Quality of Changes in Voter Registration Databases
 Version: 0.1.0
 Authors@R: as.person(c(
-    "Seo-young Silvia Kim <sskim@caltech.edu> [aut, cre]"
+    "Seo-young Silvia Kim <sskim@american.edu> [aut, cre]"
   ))
-Maintainer: Seo-young Silvia Kim <sskim@caltech.edu>
-Description: This package contains replication functions and materials 
-  for Kim, Schneider, and Alvarez (2018) 
-  Evaluating the Quality of Changes in Voter Registration Databases.
+Maintainer: Seo-young Silvia Kim <sskim@american.edu>
+Description: This package contains functions to determine the changes
+  to voter registration databases and to evaluate these changes. 
+  See Kim, Seo-young  Silvia, Spencer Schneider, and R. Michael Alvarez. 2019. 
+  Evaluating  theQuality of Changes in Voter Registration Databases.
+  American Politics Research. Article firstpublished online: Sep 9, 2019. 
+  doi: 10.1177/1532673X19870512.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -31,18 +34,11 @@ Imports:
     magrittr, 
     lubridate, 
     fst,
-    fontcm, 
-    extrafont,
-    ggplot2, 
-    ggthemes,
     RecordLinkage,
     fastLink (>= 0.5.0), 
-    futile.matrix, 
     assertthat, 
     xtable, 
     parallel, 
-    anomalize,
     data.table,
     Kmisc
 Remotes: sysilviakim/Kmisc
-VignetteBuilder: knitr
